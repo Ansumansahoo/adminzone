@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AdminZone — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#1a1f36;--sidebar:#0f1423;--accent:#6366f1;--accent2:#8b5cf6;--green:#10b981;--red:#ef4444;--amber:#f59e0b;--blue:#3b82f6;--card:#ffffff;--bg:#f0f2f9;--text:#1e293b;--text-light:#64748b;--border:#e2e8f0;--radius:12px}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+/* SIDEBAR */
+.sidebar{width:260px;background:var(--sidebar);min-height:100vh;position:fixed;top:0;left:0;z-index:100;transition:transform .3s;display:flex;flex-direction:column}
+.sidebar-logo{padding:1.5rem 1.5rem 1rem;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:.75rem}
+.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:1.1rem}
+.logo-text{font-weight:700;font-size:1.1rem;color:#fff}.logo-text span{color:var(--accent)}
+.sidebar-nav{padding:1rem 0;flex:1}
+.nav-section{padding:.5rem 1.2rem .3rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-top:.5rem}
+.nav-item{display:flex;align-items:center;gap:.75rem;padding:.75rem 1.5rem;color:rgba(255,255,255,.65);text-decoration:none;font-size:.875rem;font-weight:500;transition:all .2s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav-item.active{background:linear-gradient(90deg,rgba(99,102,241,.2),transparent);color:#fff;border-left:3px solid var(--accent)}
+.nav-item i{width:18px;text-align:center;font-size:.9rem}
+.nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:.65rem;font-weight:700;padding:.15rem .45rem;border-radius:20px}
+.sidebar-footer{padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,.08)}
+.user-info{display:flex;align-items:center;gap:.75rem}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.9rem}
+.user-name{font-size:.85rem;font-weight:600;color:#fff}
+.user-role{font-size:.72rem;color:rgba(255,255,255,.45)}
+/* MAIN */
+.main{margin-left:260px;flex:1;min-height:100vh}
+.topbar{background:#fff;padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.topbar-left{display:flex;align-items:center;gap:1rem}
+.page-title{font-size:1.1rem;font-weight:700;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:.75rem}
+.icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-light);position:relative;transition:all .2s}
+.icon-btn:hover{background:var(--bg);color:var(--text)}
+.notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid #fff}
+.content{padding:2rem}
+/* PAGES */
+.page{display:none}
+.page.active{display:block}
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;margin-bottom:2rem}
+.stat-card{background:#fff;border-radius:var(--radius);padding:1.4rem;border:1px solid var(--border);position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--c,var(--accent))}
+.stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
+.stat-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem}
+.stat-trend{font-size:.75rem;font-weight:600;display:flex;align-items:center;gap:.2rem}
+.stat-trend.up{color:var(--green)}.stat-trend.down{color:var(--red)}
+.stat-num{font-size:2rem;font-weight:800;color:var(--text);line-height:1}
+.stat-lbl{font-size:.78rem;color:var(--text-light);margin-top:.2rem}
+/* CARDS */
+.card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:1.5rem}
+.card-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:.95rem;font-weight:700;color:var(--text)}
+.card-body{padding:1.5rem}
+/* TABLE */
+.table{width:100%;border-collapse:collapse}
+.table th{padding:.75rem 1rem;text-align:left;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);border-bottom:1px solid var(--border)}
+.table td{padding:.85rem 1rem;font-size:.875rem;border-bottom:1px solid var(--border)}
+.table tr:last-child td{border-bottom:none}
+.table tr:hover td{background:#f8faff}
+.badge{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .65rem;border-radius:20px;font-size:.72rem;font-weight:600}
+.badge-green{background:#dcfce7;color:#15803d}
+.badge-red{background:#fee2e2;color:#b91c1c}
+.badge-amber{background:#fef3c7;color:#92400e}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+.badge-purple{background:#ede9fe;color:#6d28d9}
+/* FORMS */
+.form-group{margin-bottom:1.2rem}
+.form-label{display:block;font-size:.8rem;font-weight:600;color:var(--text);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.04em}
+.form-input{width:100%;padding:.7rem 1rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.9rem;color:var(--text);background:#fafbfc;transition:border .2s}
+.form-input:focus{outline:none;border-color:var(--accent);background:#fff}
+textarea.form-input{resize:vertical;min-height:100px}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.2rem;border-radius:8px;font-weight:600;font-size:.875rem;border:none;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#4f46e5}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#dc2626}
+.btn-outline{border:1.5px solid var(--border);background:#fff;color:var(--text)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-success{background:var(--green);color:#fff}
+/* GRID 2 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+/* NOTICE BOARD */
+.notice-ticker{background:var(--sidebar);border-radius:var(--radius);padding:1rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;overflow:hidden}
+.ticker-label{background:var(--accent);color:#fff;font-size:.72rem;font-weight:700;padding:.3rem .7rem;border-radius:6px;white-space:nowrap}
+.ticker-text{color:rgba(255,255,255,.85);font-size:.875rem;white-space:nowrap;animation:ticker 20s linear infinite}
+@keyframes ticker{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+.notice-item{display:flex;align-items:flex-start;gap:1rem;padding:1rem;border:1px solid var(--border);border-radius:10px;margin-bottom:.8rem;background:#fff;transition:all .2s}
+.notice-item:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(99,102,241,.08)}
+.notice-pri{width:8px;border-radius:4px;align-self:stretch;flex-shrink:0}
+.notice-content h4{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:.2rem}
+.notice-content p{font-size:.82rem;color:var(--text-light);line-height:1.5}
+.notice-meta{font-size:.72rem;color:var(--text-light);margin-top:.4rem;display:flex;gap:1rem}
+/* ACTIVITY FEED */
+.activity-item{display:flex;align-items:flex-start;gap:.9rem;padding:.8rem 0;border-bottom:1px solid var(--border)}
+.activity-item:last-child{border-bottom:none}
+.activity-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0}
+.activity-text{font-size:.85rem;color:var(--text);line-height:1.4}
+.activity-time{font-size:.72rem;color:var(--text-light);margin-top:.2rem}
+/* SHOUTBOX */
+.shout-list{max-height:360px;overflow-y:auto;margin-bottom:1.2rem;display:flex;flex-direction:column;gap:.75rem}
+.shout-item{display:flex;gap:.75rem;align-items:flex-start}
+.shout-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0}
+.shout-bubble{background:var(--bg);border-radius:0 12px 12px 12px;padding:.6rem .9rem;flex:1}
+.shout-name{font-size:.75rem;font-weight:700;color:var(--accent);margin-bottom:.2rem}
+.shout-text{font-size:.85rem;color:var(--text)}
+.shout-time{font-size:.7rem;color:var(--text-light);margin-top:.2rem}
+/* LOGIN */
+.login-wrap{min-height:100vh;background:linear-gradient(135deg,var(--sidebar),var(--primary));display:flex;align-items:center;justify-content:center;padding:1rem}
+.login-card{background:#fff;border-radius:20px;padding:2.5rem;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.login-logo{display:flex;align-items:center;gap:.75rem;margin-bottom:2rem;justify-content:center}
+.login-title{font-size:1.5rem;font-weight:800;color:var(--text);margin-bottom:.3rem;text-align:center}
+.login-sub{font-size:.875rem;color:var(--text-light);text-align:center;margin-bottom:1.8rem}
+/* CHART PLACEHOLDER */
+.chart-bar{display:flex;align-items:flex-end;gap:.4rem;height:120px;padding-top:1rem}
+.bar{flex:1;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--accent),var(--accent2));transition:height .3s;position:relative;cursor:pointer;min-height:8px}
+.bar:hover{opacity:.8}
+.bar-label{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:.65rem;color:var(--text-light);white-space:nowrap}
+.chart-wrap{overflow:hidden;padding-bottom:24px}
+/* RESPONSIVE */
+@media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
+@media(max-width:600px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.stats-row{grid-template-columns:1fr}}
+/* TOAST */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--sidebar);color:#fff;padding:.9rem 1.4rem;border-radius:12px;font-size:.875rem;font-weight:500;z-index:9999;transform:translateY(100px);opacity:0;transition:all .3s;display:flex;align-items:center;gap:.5rem}
+.toast.show{transform:translateY(0);opacity:1}
+.toast i{color:var(--green)}
+</style>
+</head>
+<body>
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">AZ</div>
+    <div class="logo-text">Admin<span>Zone</span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item active" onclick="showPage('dashboard',this)"><i class="fas fa-th-large"></i> Dashboard</button>
+    <button class="nav-item" onclick="showPage('users',this)"><i class="fas fa-users"></i> Users <span class="nav-badge" id="userCount">0</span></button>
+    <button class="nav-item" onclick="showPage('noticeboard',this)"><i class="fas fa-bullhorn"></i> Notice Board <span class="nav-badge" id="noticeCount">0</span></button>
+    <button class="nav-item" onclick="showPage('posts',this)"><i class="fas fa-newspaper"></i> Posts</button>
+    <button class="nav-item" onclick="showPage('shoutbox',this)"><i class="fas fa-comments"></i> Shoutbox</button>
+    <div class="nav-section">Admin</div>
+    <button class="nav-item" onclick="showPage('profile',this)"><i class="fas fa-user-shield"></i> My Profile</button>
+    <button class="nav-item" onclick="showPage('settings',this)"><i class="fas fa-cog"></i> Settings</button>
+    <button class="nav-item" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="sidebarAvatar">A</div>
+      <div><div class="user-name" id="sidebarName">Admin</div><div class="user-role" id="sidebarRole">Administrator</div></div>
+    </div>
+  </div>
+</div>
+<!-- MAIN -->
+<div class="main" id="mainContent">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="icon-btn" onclick="toggleSidebar()" style="display:none" id="menuBtn"><i class="fas fa-bars"></i></button>
+      <div class="page-title" id="pageTitle">Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <div class="icon-btn" title="Notifications"><i class="fas fa-bell"></i><span class="notif-dot"></span></div>
+      <div class="icon-btn" title="Refresh" onclick="loadAll()"><i class="fas fa-sync-alt"></i></div>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- DASHBOARD PAGE -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-row">
+        <div class="stat-card" style="--c:var(--accent)">
+          <div class="stat-top"><div class="stat-icon" style="background:#ede9fe;color:var(--accent)"><i class="fas fa-users"></i></div><span class="stat-trend up" id="userTrend">+0%</span></div>
+          <div class="stat-num" id="dashUsers">0</div><div class="stat-lbl">Total Users</div>
+        </div>
+        <div class="stat-card" style="--c:var(--green)">
+          <div class="stat-top"><div class="stat-icon" style="background:#dcfce7;color:var(--green)"><i class="fas fa-newspaper"></i></div><span class="stat-trend up" id="postTrend">0</span></div>
+          <div class="stat-num" id="dashPosts">0</div><div class="stat-lbl">Total Posts</div>
+        </div>
+        <div class="stat-card" style="--c:var(--amber)">
+          <div class="stat-top"><div class="stat-icon" style="background:#fef3c7;color:var(--amber)"><i class="fas fa-bullhorn"></i></div><span class="stat-trend up">Active</span></div>
+          <div class="stat-num" id="dashNotices">0</div><div class="stat-lbl">Notices</div>
+        </div>
+        <div class="stat-card" style="--c:var(--blue)">
+          <div class="stat-top"><div class="stat-icon" style="background:#dbeafe;color:var(--blue)"><i class="fas fa-comments"></i></div><span class="stat-trend up">Live</span></div>
+          <div class="stat-num" id="dashShouts">0</div><div class="stat-lbl">Shoutbox Messages</div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Monthly Activity</span></div>
+          <div class="card-body">
+            <div class="chart-wrap"><div class="chart-bar" id="chartBars"></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Recent Activity</span></div>
+          <div class="card-body" id="activityFeed"><p style="color:var(--text-light);font-size:.85rem">Loading...</p></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Latest Users</span><button class="btn btn-outline" onclick="showPage('users',null)" style="font-size:.8rem;padding:.4rem .9rem">View All</button></div>
+        <div class="card-body" style="padding:0"><table class="table" id="dashUserTable"><tr><th>Name</th><th>Email</th><th>Username</th><th>Status</th></tr></table></div>
+      </div>
+    </div>
+
+    <!-- USERS PAGE -->
+    <div class="page" id="page-users">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">All Users</span>
+          <button class="btn btn-primary" onclick="showAddUserModal()"><i class="fas fa-plus"></i> Add User</button>
+        </div>
+        <div class="card-body" style="padding:0">
+          <table class="table" id="usersTable">
+            <thead><tr><th>#</th><th>Full Name</th><th>Username</th><th>Email</th><th>Phone</th><th>Role</th><th>Actions</th></tr></thead>
+            <tbody id="usersTbody"><tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-light)">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTICE BOARD PAGE -->
+    <div class="page" id="page-noticeboard">
+      <div class="notice-ticker"><span class="ticker-label">LIVE</span><div class="ticker-text" id="tickerText">Loading notices...</div></div>
+      <div class="grid2">
+        <div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">Post a Notice</span></div>
+            <div class="card-body">
+              <div class="form-group"><label class="form-label">Title</label><input type="text" class="form-input" id="noticeTitle" placeholder="Notice title"></div>
+              <div class="form-group"><label class="form-label">Message</label><textarea class="form-input" id="noticeMsg" placeholder="Notice content..."></textarea></div>
+              <div class="form-group"><label class="form-label">Priority</label>
+                <select class="form-input" id="noticePriority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="urgent">Urgent</option></select>
+              </div>
+              <button class="btn btn-primary" onclick="postNotice()" style="width:100%"><i class="fas fa-paper-plane"></i> Post Notice</button>
+            </div>
+          </div>
+        </div>
+        <div id="noticeList"><p style="color:var(--text-light)">Loading notices...</p></div>
+      </div>
+    </div>
+
+    <!-- POSTS PAGE -->
+    <div class="page" id="page-posts">
+      <div class="grid2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Create Post</span></div>
+          <div class="card-body">
+            <div class="form-group"><label class="form-label">Title</label><input type="text" class="form-input" id="postTitle" placeholder="Post title"></div>
+            <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="postDesc" placeholder="Write something..."></textarea></div>
+            <div class="form-group"><label class="form-label">Author</label><input type="text" class="form-input" id="postAuthor" placeholder="Your name"></div>
+            <button class="btn btn-primary" onclick="createPost()" style="width:100%"><i class="fas fa-plus"></i> Create Post</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">All Posts</span></div>
+          <div class="card-body" id="postsList"><p style="color:var(--text-light)">Loading posts...</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHOUTBOX PAGE -->
+    <div class="page" id="page-shoutbox">
+      <div class="card" style="max-width:680px;margin:0 auto">
+        <div class="card-header"><span class="card-title"><i class="fas fa-comments" style="color:var(--accent)"></i> Shoutbox</span><button class="btn btn-outline" style="font-size:.78rem;padding:.35rem .8rem" onclick="loadShouts()"><i class="fas fa-sync"></i></button></div>
+        <div class="card-body">
+          <div class="shout-list" id="shoutList"><p style="color:var(--text-light);font-size:.85rem">Loading messages...</p></div>
+          <hr style="border:none;border-top:1px solid var(--border);margin-bottom:1rem">
+          <div class="form-group"><label class="form-label">Your Name</label><input type="text" class="form-input" id="shoutName" placeholder="Nickname"></div>
+          <div class="form-group"><label class="form-label">Message</label><textarea class="form-input" id="shoutMsg" placeholder="Write a message... (max 240 chars)" maxlength="240" rows="3"></textarea></div>
+          <button class="btn btn-primary" onclick="sendShout()" style="width:100%"><i class="fas fa-paper-plane"></i> Shout!</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div class="page" id="page-profile">
+      <div class="grid2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">My Profile</span></div>
+          <div class="card-body" style="text-align:center">
+            <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:2rem;color:#fff;font-weight:700" id="profileAvatar">A</div>
+            <h2 id="profileName" style="font-size:1.1rem;margin-bottom:.3rem">Admin</h2>
+            <p id="profileEmail" style="color:var(--text-light);font-size:.85rem;margin-bottom:.3rem">—</p>
+            <p id="profileRole" style="margin-bottom:1.2rem"><span class="badge badge-purple">Administrator</span></p>
+            <button class="btn btn-outline" onclick="doLogout()" style="width:100%"><i class="fas fa-sign-out-alt"></i> Logout</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">My Posts</span></div>
+          <div class="card-body" id="profilePosts"><p style="color:var(--text-light)">Loading...</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div class="page" id="page-settings">
+      <div class="card" style="max-width:560px">
+        <div class="card-header"><span class="card-title">System Settings</span></div>
+        <div class="card-body">
+          <div class="form-group"><label class="form-label">Site Name</label><input type="text" class="form-input" value="AdminZone" id="siteName"></div>
+          <div class="form-group"><label class="form-label">Admin Email</label><input type="email" class="form-input" value="admin@adminzone.com" id="adminEmail"></div>
+          <div class="form-group"><label class="form-label">Allow Public Registration</label>
+            <select class="form-input" id="allowReg"><option>Yes</option><option>No</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Notice Board Max Items</label><input type="number" class="form-input" value="20" id="maxNotices"></div>
+          <button class="btn btn-primary" onclick="saveSettings()"><i class="fas fa-save"></i> Save Settings</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+<!-- ADD USER MODAL -->
+<div id="addUserModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:#fff;border-radius:16px;padding:2rem;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+    <h3 style="margin-bottom:1.2rem;font-size:1.1rem">Add New User</h3>
+    <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" id="newFname" placeholder="Full name"></div>
+    <div class="form-group"><label class="form-label">Username</label><input type="text" class="form-input" id="newUname" placeholder="@username"></div>
+    <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="newEmail" placeholder="user@example.com"></div>
+    <div class="form-group"><label class="form-label">Phone</label><input type="text" class="form-input" id="newPhone" placeholder="+91 XXXXX XXXXX"></div>
+    <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="newPass" placeholder="Min. 6 characters"></div>
+    <div class="form-group"><label class="form-label">Role</label><select class="form-input" id="newRole"><option value="user">User</option><option value="moderator">Moderator</option><option value="admin">Admin</option></select></div>
+    <div style="display:flex;gap:.75rem;margin-top:1rem">
+      <button class="btn btn-outline" onclick="document.getElementById('addUserModal').style.display='none'" style="flex:1">Cancel</button>
+      <button class="btn btn-primary" onclick="addUser()" style="flex:1"><i class="fas fa-check"></i> Add User</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg">Done</span></div>
+<script>
+// ============ SUPABASE SETUP ============
+const SB_URL = 'https://xpziztrwufkqndzeguyj.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhweml6dHJ3dWZrcW5kemVndXlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzMDI5OTIsImV4cCI6MjA5Mzg3ODk5Mn0.-0230c8JwmK71uLAuYgvDyoQaT28Xbadtr0eVJPEoFM';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+
+// ============ AUTH CHECK ============
+let currentAdmin = null;
+
+async function checkAuth(){
+  const stored = sessionStorage.getItem('az_admin');
+  if(stored){
+    currentAdmin = JSON.parse(stored);
+    showDashboard();
+    loadAll();
+    return;
+  }
+  showLoginScreen();
+}
+
+function showLoginScreen(){
+  document.body.innerHTML = `
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo"><div class="logo-icon">AZ</div><div class="logo-text">Admin<span>Zone</span></div></div>
+      <h2 class="login-title">Welcome Back</h2>
+      <p class="login-sub">Sign in to your AdminZone account</p>
+      <div class="form-group"><label class="form-label">Email or Username</label><input type="text" class="form-input" id="loginEmail" placeholder="admin@example.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="loginPass" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn btn-primary" onclick="doLogin()" style="width:100%;padding:.9rem;font-size:1rem;margin-top:.5rem"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+      <p style="text-align:center;margin-top:1.2rem;font-size:.82rem;color:var(--text-light)">Don't have an account? <a href="signup.html" style="color:var(--accent);font-weight:600">Sign up</a></p>
+      <div id="loginErr" style="display:none;background:#fee2e2;border-radius:8px;padding:.7rem 1rem;margin-top:1rem;color:var(--red);font-size:.85rem;text-align:center"></div>
+      <div style="background:var(--bg);border-radius:8px;padding:.7rem 1rem;margin-top:1rem;font-size:.78rem;color:var(--text-light);text-align:center">
+        <strong>Demo:</strong> admin@adminzone.com / admin123
+      </div>
+    </div>
+  </div>`;
+}
+
+async function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  if(!email || !pass) return;
+  
+  // Check demo credentials
+  if((email === 'admin@adminzone.com' || email === 'admin') && pass === 'admin123'){
+    currentAdmin = {id:'demo-admin',fname:'Admin',uname:'admin',email:'admin@adminzone.com',role:'admin'};
+    sessionStorage.setItem('az_admin', JSON.stringify(currentAdmin));
+    location.reload();
+    return;
+  }
+  
+  try{
+    const {data,error} = await sb.from('az_users').select('*').eq('email',email).eq('pass',pass).single();
+    if(data && data.role==='admin'){
+      currentAdmin = data;
+      sessionStorage.setItem('az_admin', JSON.stringify(currentAdmin));
+      location.reload();
+    } else {
+      showLoginErr('Invalid credentials. Use demo: admin@adminzone.com / admin123');
+    }
+  }catch(e){
+    showLoginErr('Invalid credentials. Use demo: admin@adminzone.com / admin123');
+  }
+}
+
+function showLoginErr(msg){
+  const el = document.getElementById('loginErr');
+  if(el){el.textContent=msg;el.style.display='block';}
+}
+
+function doLogout(){
+  sessionStorage.removeItem('az_admin');
+  currentAdmin = null;
+  location.reload();
+}
+
+function showDashboard(){
+  if(currentAdmin){
+    document.getElementById('sidebarName').textContent = currentAdmin.fname || currentAdmin.uname || 'Admin';
+    document.getElementById('sidebarAvatar').textContent = (currentAdmin.fname||'A')[0].toUpperCase();
+    document.getElementById('profileAvatar').textContent = (currentAdmin.fname||'A')[0].toUpperCase();
+    document.getElementById('profileName').textContent = currentAdmin.fname || currentAdmin.uname;
+    document.getElementById('profileEmail').textContent = currentAdmin.email || '';
+  }
+}
+
+// ============ NAVIGATION ============
+function showPage(name, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const page = document.getElementById('page-'+name);
+  if(page) page.classList.add('active');
+  if(btn) btn.classList.add('active');
+  const titles = {dashboard:'Dashboard',users:'User Management',noticeboard:'Notice Board',posts:'Posts',shoutbox:'Shoutbox',profile:'My Profile',settings:'Settings'};
+  document.getElementById('pageTitle').textContent = titles[name] || name;
+  // Load page data
+  if(name==='users') loadUsers();
+  if(name==='noticeboard') loadNotices();
+  if(name==='posts') loadPosts();
+  if(name==='shoutbox') loadShouts();
+  if(name==='profile') loadProfile();
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ============ LOAD ALL ============
+async function loadAll(){
+  loadDashboardStats();
+  loadActivityFeed();
+  loadDashboardUsers();
+  buildChart();
+}
+
+// ============ DASHBOARD STATS ============
+async function loadDashboardStats(){
+  try{
+    const [users,posts,notices,shouts] = await Promise.all([
+      sb.from('az_users').select('id',{count:'exact',head:true}),
+      sb.from('az_posts').select('id',{count:'exact',head:true}),
+      sb.from('az_notices').select('id',{count:'exact',head:true}),
+      sb.from('az_shouts').select('id',{count:'exact',head:true})
+    ]);
+    const uc = users.count||0, pc = posts.count||0, nc = notices.count||0, sc = shouts.count||0;
+    document.getElementById('dashUsers').textContent = uc;
+    document.getElementById('dashPosts').textContent = pc;
+    document.getElementById('dashNotices').textContent = nc;
+    document.getElementById('dashShouts').textContent = sc;
+    document.getElementById('userCount').textContent = uc;
+    document.getElementById('noticeCount').textContent = nc;
+  }catch(e){ console.log('stats error:',e); }
+}
+
+async function loadDashboardUsers(){
+  try{
+    const {data} = await sb.from('az_users').select('*').limit(5).order('id',{ascending:false});
+    const tbody = document.getElementById('dashUserTable');
+    if(!data||!data.length){tbody.innerHTML='<tr><th>Name</th><th>Email</th><th>Username</th><th>Status</th></tr><tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--text-light)">No users yet</td></tr>';return;}
+    tbody.innerHTML='<tr><th>Name</th><th>Email</th><th>Username</th><th>Status</th></tr>'+data.map(u=>`<tr><td>${u.fname||'—'}</td><td>${u.email||'—'}</td><td>@${u.uname||'—'}</td><td><span class="badge badge-green">Active</span></td></tr>`).join('');
+  }catch(e){}
+}
+
+async function loadActivityFeed(){
+  const feed = document.getElementById('activityFeed');
+  try{
+    const [posts,shouts,notices] = await Promise.all([
+      sb.from('az_posts').select('title,author,created_at').limit(3).order('created_at',{ascending:false}),
+      sb.from('az_shouts').select('name,created_at').limit(3).order('created_at',{ascending:false}),
+      sb.from('az_notices').select('title,created_at').limit(2).order('created_at',{ascending:false})
+    ]);
+    const items = [];
+    (posts.data||[]).forEach(p=>items.push({icon:'fa-newspaper',color:'#ede9fe',ic:'var(--accent)',text:`<strong>${p.author||'Someone'}</strong> posted "<em>${p.title||'Untitled'}</em>"</em>`,time:p.created_at}));
+    (shouts.data||[]).forEach(s=>items.push({icon:'fa-comment',color:'#dbeafe',ic:'var(--blue)',text:`<strong>${s.name||'Anonymous'}</strong> sent a shoutbox message`,time:s.created_at}));
+    (notices.data||[]).forEach(n=>items.push({icon:'fa-bullhorn',color:'#fef3c7',ic:'var(--amber)',text:`New notice posted: "<em>${n.title||'Untitled'}</em>"`,time:n.created_at}));
+    items.sort((a,b)=>new Date(b.time)-new Date(a.time));
+    if(!items.length){feed.innerHTML='<p style="color:var(--text-light);font-size:.85rem">No activity yet.</p>';return;}
+    feed.innerHTML = items.slice(0,6).map(i=>`<div class="activity-item"><div class="activity-icon" style="background:${i.color};color:${i.ic}"><i class="fas ${i.icon}"></i></div><div><div class="activity-text">${i.text}</div><div class="activity-time">${timeAgo(i.time)}</div></div></div>`).join('');
+  }catch(e){feed.innerHTML='<p style="color:var(--text-light);font-size:.85rem">Could not load activity.</p>';}
+}
+
+function buildChart(){
+  const bars = document.getElementById('chartBars');
+  if(!bars) return;
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const heights = [30,45,60,40,70,85,65,90,75,55,80,95];
+  bars.innerHTML = heights.map((h,i)=>`<div class="bar" style="height:${h}%"><span class="bar-label">${months[i]}</span></div>`).join('');
+}
+
+// ============ USERS ============
+async function loadUsers(){
+  const tbody = document.getElementById('usersTbody');
+  try{
+    const {data,error} = await sb.from('az_users').select('*').order('id',{ascending:false});
+    if(!data||!data.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-light)">No users found. Click "Add User" to create one.</td></tr>';return;}
+    tbody.innerHTML = data.map((u,i)=>`
+      <tr>
+        <td>${i+1}</td>
+        <td>${u.fname||'—'}</td>
+        <td>@${u.uname||'—'}</td>
+        <td>${u.email||'—'}</td>
+        <td>${u.phone||'—'}</td>
+        <td><span class="badge badge-${u.role==='admin'?'purple':u.role==='moderator'?'blue':'green'}">${u.role||'user'}</span></td>
+        <td><button class="btn btn-danger" style="padding:.3rem .7rem;font-size:.75rem" onclick="deleteUser('${u.id}')"><i class="fas fa-trash"></i></button></td>
+      </tr>`).join('');
+    document.getElementById('dashUsers').textContent = data.length;
+    document.getElementById('userCount').textContent = data.length;
+  }catch(e){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-light)">Error loading users.</td></tr>';}
+}
+
+function showAddUserModal(){
+  document.getElementById('addUserModal').style.display='flex';
+}
+
+async function addUser(){
+  const fname=document.getElementById('newFname').value.trim();
+  const uname=document.getElementById('newUname').value.trim();
+  const email=document.getElementById('newEmail').value.trim();
+  const phone=document.getElementById('newPhone').value.trim();
+  const pass=document.getElementById('newPass').value.trim();
+  const role=document.getElementById('newRole').value;
+  if(!fname||!email||!pass){showToast('Please fill all required fields','error');return;}
+  try{
+    const {error} = await sb.from('az_users').insert({fname,uname,email,phone,pass,role,image:'',created_at:new Date().toISOString()});
+    if(error) throw error;
+    document.getElementById('addUserModal').style.display='none';
+    ['newFname','newUname','newEmail','newPhone','newPass'].forEach(id=>document.getElementById(id).value='');
+    showToast('User added successfully!');
+    loadUsers();
+  }catch(e){showToast('Error: '+e.message,'error');}
+}
+
+async function deleteUser(id){
+  if(!confirm('Delete this user?')) return;
+  try{
+    await sb.from('az_users').delete().eq('id',id);
+    showToast('User deleted');
+    loadUsers();
+  }catch(e){showToast('Error deleting user','error');}
+}
+
+// ============ NOTICE BOARD ============
+async function loadNotices(){
+  const list = document.getElementById('noticeList');
+  const ticker = document.getElementById('tickerText');
+  try{
+    const {data} = await sb.from('az_notices').select('*').order('created_at',{ascending:false}).limit(20);
+    if(!data||!data.length){list.innerHTML='<p style="color:var(--text-light)">No notices yet.</p>';ticker.textContent='No active notices';return;}
+    ticker.textContent = data.map(n=>n.title).join(' • ');
+    const priColor = {low:'#10b981',medium:'#3b82f6',high:'#f59e0b',urgent:'#ef4444'};
+    list.innerHTML = data.map(n=>`
+      <div class="notice-item">
+        <div class="notice-pri" style="background:${priColor[n.priority]||'#6366f1'}"></div>
+        <div class="notice-content" style="flex:1">
+          <h4>${n.title||'Untitled'}</h4>
+          <p>${n.message||''}</p>
+          <div class="notice-meta"><span><i class="fas fa-clock"></i> ${timeAgo(n.created_at)}</span><span class="badge badge-${n.priority==='urgent'?'red':n.priority==='high'?'amber':n.priority==='medium'?'blue':'green'}">${n.priority||'low'}</span></div>
+        </div>
+        <button class="btn btn-danger" style="padding:.3rem .7rem;font-size:.75rem;align-self:flex-start" onclick="deleteNotice('${n.id}')"><i class="fas fa-trash"></i></button>
+      </div>`).join('');
+    document.getElementById('noticeCount').textContent = data.length;
+    document.getElementById('dashNotices').textContent = data.length;
+  }catch(e){list.innerHTML='<p style="color:var(--text-light)">Error loading notices.</p>';}
+}
+
+async function postNotice(){
+  const title = document.getElementById('noticeTitle').value.trim();
+  const message = document.getElementById('noticeMsg').value.trim();
+  const priority = document.getElementById('noticePriority').value;
+  if(!title||!message){showToast('Title and message required','error');return;}
+  try{
+    const {error} = await sb.from('az_notices').insert({title,message,priority,created_by:currentAdmin?.id||'admin',created_at:new Date().toISOString()});
+    if(error) throw error;
+    document.getElementById('noticeTitle').value='';
+    document.getElementById('noticeMsg').value='';
+    showToast('Notice posted!');
+    loadNotices();
+  }catch(e){showToast('Error: '+e.message,'error');}
+}
+
+async function deleteNotice(id){
+  if(!confirm('Delete this notice?')) return;
+  await sb.from('az_notices').delete().eq('id',id);
+  showToast('Notice deleted');
+  loadNotices();
+}
+
+// ============ POSTS ============
+async function loadPosts(){
+  const list = document.getElementById('postsList');
+  try{
+    const {data} = await sb.from('az_posts').select('*').order('created_at',{ascending:false});
+    if(!data||!data.length){list.innerHTML='<p style="color:var(--text-light)">No posts yet.</p>';return;}
+    list.innerHTML = data.map(p=>`
+      <div style="border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.8rem">
+        <h4 style="font-size:.9rem;margin-bottom:.3rem">${p.title||'Untitled'}</h4>
+        <p style="font-size:.82rem;color:var(--text-light);margin-bottom:.5rem">${p.description||''}</p>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:.72rem;color:var(--text-light)">By ${p.author||'Unknown'} • ${timeAgo(p.created_at)}</span>
+          <button class="btn btn-danger" style="padding:.25rem .6rem;font-size:.72rem" onclick="deletePost('${p.id}')"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>`).join('');
+    document.getElementById('dashPosts').textContent = data.length;
+  }catch(e){list.innerHTML='<p style="color:var(--text-light)">Error loading posts.</p>';}
+}
+
+async function createPost(){
+  const title = document.getElementById('postTitle').value.trim();
+  const description = document.getElementById('postDesc').value.trim();
+  const author = document.getElementById('postAuthor').value.trim() || currentAdmin?.fname || 'Admin';
+  if(!title){showToast('Title required','error');return;}
+  try{
+    const {error} = await sb.from('az_posts').insert({title,description,author,userid:currentAdmin?.id||0,imagepost:'',created_at:new Date().toISOString()});
+    if(error) throw error;
+    document.getElementById('postTitle').value='';
+    document.getElementById('postDesc').value='';
+    showToast('Post created!');
+    loadPosts();
+  }catch(e){showToast('Error: '+e.message,'error');}
+}
+
+async function deletePost(id){
+  if(!confirm('Delete this post?')) return;
+  await sb.from('az_posts').delete().eq('id',id);
+  showToast('Post deleted');
+  loadPosts();
+}
+
+// ============ SHOUTBOX ============
+async function loadShouts(){
+  const list = document.getElementById('shoutList');
+  try{
+    const {data} = await sb.from('az_shouts').select('*').order('created_at',{ascending:false}).limit(30);
+    if(!data||!data.length){list.innerHTML='<p style="color:var(--text-light);font-size:.85rem">No messages yet. Be the first to shout!</p>';return;}
+    const colors = ['#6366f1','#8b5cf6','#3b82f6','#10b981','#f59e0b','#ef4444'];
+    list.innerHTML = data.reverse().map((s,i)=>`
+      <div class="shout-item">
+        <div class="shout-avatar" style="background:${colors[i%colors.length]}">${(s.name||'?')[0].toUpperCase()}</div>
+        <div class="shout-bubble">
+          <div class="shout-name">${s.name||'Anonymous'}</div>
+          <div class="shout-text">${s.message||''}</div>
+          <div class="shout-time">${timeAgo(s.created_at)}</div>
+        </div>
+      </div>`).join('');
+    list.scrollTop = list.scrollHeight;
+    document.getElementById('dashShouts').textContent = data.length;
+  }catch(e){list.innerHTML='<p style="color:var(--text-light)">Error loading messages.</p>';}
+}
+
+async function sendShout(){
+  const name = document.getElementById('shoutName').value.trim();
+  const message = document.getElementById('shoutMsg').value.trim();
+  if(!name||!message){showToast('Name and message required','error');return;}
+  try{
+    const {error} = await sb.from('az_shouts').insert({name,message,created_at:new Date().toISOString()});
+    if(error) throw error;
+    document.getElementById('shoutMsg').value='';
+    showToast('Shout sent!');
+    loadShouts();
+  }catch(e){showToast('Error: '+e.message,'error');}
+}
+
+// ============ PROFILE ============
+async function loadProfile(){
+  if(!currentAdmin) return;
+  try{
+    const {data} = await sb.from('az_posts').select('*').eq('userid', currentAdmin.id||0);
+    const list = document.getElementById('profilePosts');
+    if(!data||!data.length){list.innerHTML='<p style="color:var(--text-light)">No posts yet.</p>';return;}
+    list.innerHTML = data.map(p=>`<div style="border:1px solid var(--border);border-radius:10px;padding:.8rem;margin-bottom:.6rem"><h4 style="font-size:.88rem">${p.title||'Untitled'}</h4><p style="font-size:.8rem;color:var(--text-light)">${p.description||''}</p></div>`).join('');
+  }catch(e){}
+}
+
+// ============ SETTINGS ============
+function saveSettings(){
+  showToast('Settings saved!');
+}
+
+// ============ UTILITIES ============
+function timeAgo(ts){
+  if(!ts) return 'Unknown';
+  const d = new Date(ts), now = new Date();
+  const diff = Math.floor((now-d)/1000);
+  if(diff<60) return diff+'s ago';
+  if(diff<3600) return Math.floor(diff/60)+'m ago';
+  if(diff<86400) return Math.floor(diff/3600)+'h ago';
+  return Math.floor(diff/86400)+'d ago';
+}
+
+function showToast(msg, type='success'){
+  const t = document.getElementById('toast');
+  const m = document.getElementById('toastMsg');
+  if(!t||!m) return;
+  m.textContent = msg;
+  t.querySelector('i').className = type==='error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+  t.querySelector('i').style.color = type==='error' ? 'var(--red)' : 'var(--green)';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ============ AUTO SETUP DB TABLES ============
+async function setupTables(){
+  // Just check if tables exist via simple query, if error they don't exist yet
+  // Tables need to be created in Supabase dashboard
+  // This is handled by Supabase setup
+}
+
+// ============ INIT ============
+checkAuth();
+</script>
+</body>
+</html>
