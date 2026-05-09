@@ -1625,7 +1625,7 @@ function navigateTo(page) {
   const nav = document.querySelector('.nav-item[data-page="' + page + '"]');
   if (nav) nav.classList.add('active');
   const titles = {
-    dashboard: ['Dashboard', 'Welcome back, ' + (currentUser ? currentUser.fname : 'User') + '! Here's what's happening.'],
+    dashboard: ['Dashboard', 'Welcome back, ' + (currentUser ? currentUser.fname : 'User') + '! Here\'s what\'s happening.'],
     users: ['Users', 'Manage all registered users and permissions'],
     posts: ['Posts', 'Browse and manage all community posts'],
     notices: ['Notice Board', 'Publish and manage announcements'],
@@ -2278,7 +2278,7 @@ function renderProfilePage() {
 
   const pp = document.getElementById('profile-posts');
   if (pp) {
-    if (!posts.length) pp.innerHTML = '<div class="empty-state" style="padding:24px 8px"><div class="empty-msg">You haven't written any posts yet.</div><button class="btn btn-primary btn-sm" onclick="navigateTo('posts')"><i class="fa fa-pen"></i> Write Post</button></div>';
+    if (!posts.length) pp.innerHTML = '<div class="empty-state" style="padding:24px 8px"><div class="empty-msg">You haven\'t written any posts yet.</div><button class="btn btn-primary btn-sm" onclick="navigateTo('posts')"><i class="fa fa-pen"></i> Write Post</button></div>';
     else pp.innerHTML = posts.slice(0,5).map(p => `<div class="activity-item">
       <div class="activity-icon" style="background:rgba(6,182,212,0.1);color:var(--accent)"><i class="fa fa-file-lines"></i></div>
       <div class="activity-content">
