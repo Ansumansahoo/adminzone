@@ -1929,7 +1929,7 @@ function saveUser(e) {
       if (pwd) users[idx].password = pwd;
       if (users[idx].id === currentUser?.id) { currentUser = users[idx]; updateUserUI(); }
     }
-    toast('User updated', fname+' '+lname+''s profile has been updated.', 'success');
+    toast('User updated', fname+' '+lname+"'s profile has been updated.", 'success');
   } else {
     if (users.find(u=>u.email===email)) { alert('Email already exists.'); return; }
     users.push({ id:'u'+Date.now(), fname, lname, email, username:username||email.split('@')[0], password:pwd, role, bio, status:'active', joined:Date.now() });
