@@ -1,726 +1,2639 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AdminZone — Dashboard</title>
+<title>AdminZone &mdash; Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--primary:#1a1f36;--sidebar:#0f1423;--accent:#6366f1;--accent2:#8b5cf6;--green:#10b981;--red:#ef4444;--amber:#f59e0b;--blue:#3b82f6;--card:#ffffff;--bg:#f0f2f9;--text:#1e293b;--text-light:#64748b;--border:#e2e8f0;--radius:12px}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
-/* SIDEBAR */
-.sidebar{width:260px;background:var(--sidebar);min-height:100vh;position:fixed;top:0;left:0;z-index:100;transition:transform .3s;display:flex;flex-direction:column}
-.sidebar-logo{padding:1.5rem 1.5rem 1rem;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:.75rem}
-.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:1.1rem}
-.logo-text{font-weight:700;font-size:1.1rem;color:#fff}.logo-text span{color:var(--accent)}
-.sidebar-nav{padding:1rem 0;flex:1}
-.nav-section{padding:.5rem 1.2rem .3rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-top:.5rem}
-.nav-item{display:flex;align-items:center;gap:.75rem;padding:.75rem 1.5rem;color:rgba(255,255,255,.65);text-decoration:none;font-size:.875rem;font-weight:500;transition:all .2s;cursor:pointer;border:none;background:none;width:100%;text-align:left}
-.nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
-.nav-item.active{background:linear-gradient(90deg,rgba(99,102,241,.2),transparent);color:#fff;border-left:3px solid var(--accent)}
-.nav-item i{width:18px;text-align:center;font-size:.9rem}
-.nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:.65rem;font-weight:700;padding:.15rem .45rem;border-radius:20px}
-.sidebar-footer{padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,.08)}
-.user-info{display:flex;align-items:center;gap:.75rem}
-.user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.9rem}
-.user-name{font-size:.85rem;font-weight:600;color:#fff}
-.user-role{font-size:.72rem;color:rgba(255,255,255,.45)}
-/* MAIN */
-.main{margin-left:260px;flex:1;min-height:100vh}
-.topbar{background:#fff;padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
-.topbar-left{display:flex;align-items:center;gap:1rem}
-.page-title{font-size:1.1rem;font-weight:700;color:var(--text)}
-.topbar-right{display:flex;align-items:center;gap:.75rem}
-.icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-light);position:relative;transition:all .2s}
-.icon-btn:hover{background:var(--bg);color:var(--text)}
-.notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid #fff}
-.content{padding:2rem}
-/* PAGES */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#222638;--sidebar:#13151f;
+  --card:#1e2235;--card2:#252a3d;--border:#2e3356;
+  --text:#e8eaf0;--text2:#9ba3c0;--text3:#5e6585;
+  --primary:#6366f1;--primary2:#818cf8;--primary-dim:rgba(99,102,241,.15);
+  --green:#22c55e;--green-dim:rgba(34,197,94,.15);
+  --red:#ef4444;--red-dim:rgba(239,68,68,.15);
+  --amber:#f59e0b;--amber-dim:rgba(245,158,11,.15);
+  --blue:#3b82f6;--blue-dim:rgba(59,130,246,.15);
+  --pink:#ec4899;--cyan:#06b6d4;
+  --radius:12px;--radius-sm:8px;--radius-lg:16px;
+  --shadow:0 4px 24px rgba(0,0,0,.4);
+  --shadow-lg:0 8px 40px rgba(0,0,0,.5);
+  --sidebar-w:260px;--topbar-h:64px;
+  --transition:.2s ease;
+}
+[data-theme="light"]{
+  --bg:#f0f2f9;--bg2:#e8eaf0;--bg3:#dde0ee;--sidebar:#1e2235;
+  --card:#ffffff;--card2:#f5f6fc;--border:#d4d8ee;
+  --text:#1a1d2e;--text2:#4a5080;--text3:#8890b0;
+}
+html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;border:none;background:none;font-family:inherit;font-size:inherit;color:inherit}
+input,textarea,select{font-family:inherit;font-size:inherit}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ── LAYOUT ── */
+#app{display:flex;min-height:100vh}
+.sidebar{
+  width:var(--sidebar-w);min-width:var(--sidebar-w);height:100vh;position:fixed;
+  top:0;left:0;background:var(--sidebar);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;
+  transition:left var(--transition);z-index:100
+}
+.main-wrap{flex:1;margin-left:var(--sidebar-w);display:flex;flex-direction:column;min-height:100vh;min-width:0}
+.topbar{
+  height:var(--topbar-h);background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 24px;
+  position:sticky;top:0;z-index:50;gap:12px
+}
+.page-area{flex:1;padding:24px;overflow-y:auto}
+
+/* ── SIDEBAR ── */
+.sidebar-logo{padding:20px 20px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.logo-icon{
+  width:38px;height:38px;background:linear-gradient(135deg,var(--primary),var(--pink));
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:14px;color:#fff;flex-shrink:0
+}
+.logo-text{font-weight:700;font-size:16px;color:var(--text)}
+.logo-text span{color:var(--primary)}
+.sidebar-user{padding:16px 16px 12px;border-bottom:1px solid var(--border)}
+.su-row{display:flex;align-items:center;gap:10px}
+.su-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--pink));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
+.su-info{min-width:0}
+.su-name{font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.su-role{font-size:11px;color:var(--primary2);text-transform:uppercase;letter-spacing:.5px;font-weight:500}
+.sidebar-nav{padding:12px 0;flex:1}
+.nav-section{padding:8px 20px 4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3)}
+.nav-item{
+  display:flex;align-items:center;gap:10px;width:100%;padding:10px 20px;
+  color:var(--text2);font-size:13px;font-weight:500;border-radius:0;
+  transition:background var(--transition),color var(--transition);text-align:left;position:relative
+}
+.nav-item:hover{background:var(--primary-dim);color:var(--text)}
+.nav-item.active{background:var(--primary-dim);color:var(--primary2);font-weight:600}
+.nav-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--primary);border-radius:0 3px 3px 0}
+.nav-item i{width:18px;text-align:center;font-size:14px}
+.nav-badge{
+  margin-left:auto;background:var(--primary);color:#fff;font-size:10px;
+  font-weight:700;padding:2px 7px;border-radius:20px;min-width:20px;text-align:center
+}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+.logout-btn{
+  display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;
+  background:var(--red-dim);color:var(--red);border-radius:var(--radius-sm);
+  font-size:13px;font-weight:500;transition:background var(--transition)
+}
+.logout-btn:hover{background:rgba(239,68,68,.25)}
+
+/* ── TOPBAR ── */
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.page-title{font-size:18px;font-weight:700}
+.breadcrumb{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:4px}
+.icon-btn{
+  width:38px;height:38px;border-radius:var(--radius-sm);background:var(--card);
+  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+  color:var(--text2);cursor:pointer;transition:all var(--transition);position:relative;flex-shrink:0
+}
+.icon-btn:hover{background:var(--card2);color:var(--text);border-color:var(--primary)}
+.notif-dot{position:absolute;top:7px;right:7px;width:7px;height:7px;background:var(--red);border-radius:50%;border:2px solid var(--bg2)}
+.search-bar{
+  display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:0 12px;height:38px;transition:border var(--transition)
+}
+.search-bar:focus-within{border-color:var(--primary)}
+.search-bar input{background:none;border:none;outline:none;color:var(--text);width:200px;font-size:13px}
+.search-bar input::placeholder{color:var(--text3)}
+.search-bar i{color:var(--text3);font-size:13px}
+.user-menu{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;cursor:pointer;transition:border var(--transition)}
+.user-menu:hover{border-color:var(--primary)}
+.user-menu-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--pink));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff}
+.user-menu-name{font-size:13px;font-weight:500}
+.menu-btn{display:none;width:38px;height:38px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);align-items:center;justify-content:center;color:var(--text2);cursor:pointer}
+
+/* ── CARDS ── */
 .page{display:none}
 .page.active{display:block}
-/* STATS ROW */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;margin-bottom:2rem}
-.stat-card{background:#fff;border-radius:var(--radius);padding:1.4rem;border:1px solid var(--border);position:relative;overflow:hidden}
-.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--c,var(--accent))}
-.stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
-.stat-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem}
-.stat-trend{font-size:.75rem;font-weight:600;display:flex;align-items:center;gap:.2rem}
-.stat-trend.up{color:var(--green)}.stat-trend.down{color:var(--red)}
-.stat-num{font-size:2rem;font-weight:800;color:var(--text);line-height:1}
-.stat-lbl{font-size:.78rem;color:var(--text-light);margin-top:.2rem}
-/* CARDS */
-.card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:1.5rem}
-.card-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.card-title{font-size:.95rem;font-weight:700;color:var(--text)}
-.card-body{padding:1.5rem}
-/* TABLE */
-.table{width:100%;border-collapse:collapse}
-.table th{padding:.75rem 1rem;text-align:left;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);border-bottom:1px solid var(--border)}
-.table td{padding:.85rem 1rem;font-size:.875rem;border-bottom:1px solid var(--border)}
-.table tr:last-child td{border-bottom:none}
-.table tr:hover td{background:#f8faff}
-.badge{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .65rem;border-radius:20px;font-size:.72rem;font-weight:600}
-.badge-green{background:#dcfce7;color:#15803d}
-.badge-red{background:#fee2e2;color:#b91c1c}
-.badge-amber{background:#fef3c7;color:#92400e}
-.badge-blue{background:#dbeafe;color:#1d4ed8}
-.badge-purple{background:#ede9fe;color:#6d28d9}
-/* FORMS */
-.form-group{margin-bottom:1.2rem}
-.form-label{display:block;font-size:.8rem;font-weight:600;color:var(--text);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.04em}
-.form-input{width:100%;padding:.7rem 1rem;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.9rem;color:var(--text);background:#fafbfc;transition:border .2s}
-.form-input:focus{outline:none;border-color:var(--accent);background:#fff}
-textarea.form-input{resize:vertical;min-height:100px}
-.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.2rem;border-radius:8px;font-weight:600;font-size:.875rem;border:none;cursor:pointer;transition:all .2s}
-.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#4f46e5}
-.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#dc2626}
-.btn-outline{border:1.5px solid var(--border);background:#fff;color:var(--text)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
-.btn-success{background:var(--green);color:#fff}
-/* GRID 2 */
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
-/* NOTICE BOARD */
-.notice-ticker{background:var(--sidebar);border-radius:var(--radius);padding:1rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;overflow:hidden}
-.ticker-label{background:var(--accent);color:#fff;font-size:.72rem;font-weight:700;padding:.3rem .7rem;border-radius:6px;white-space:nowrap}
-.ticker-text{color:rgba(255,255,255,.85);font-size:.875rem;white-space:nowrap;animation:ticker 20s linear infinite}
-@keyframes ticker{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
-.notice-item{display:flex;align-items:flex-start;gap:1rem;padding:1rem;border:1px solid var(--border);border-radius:10px;margin-bottom:.8rem;background:#fff;transition:all .2s}
-.notice-item:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(99,102,241,.08)}
-.notice-pri{width:8px;border-radius:4px;align-self:stretch;flex-shrink:0}
-.notice-content h4{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:.2rem}
-.notice-content p{font-size:.82rem;color:var(--text-light);line-height:1.5}
-.notice-meta{font-size:.72rem;color:var(--text-light);margin-top:.4rem;display:flex;gap:1rem}
-/* ACTIVITY FEED */
-.activity-item{display:flex;align-items:flex-start;gap:.9rem;padding:.8rem 0;border-bottom:1px solid var(--border)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;position:relative;overflow:hidden;transition:transform var(--transition),border-color var(--transition)
+}
+.stat-card:hover{transform:translateY(-2px);border-color:var(--primary)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.c-purple::before{background:linear-gradient(90deg,var(--primary),var(--primary2))}
+.stat-card.c-green::before{background:linear-gradient(90deg,#22c55e,#4ade80)}
+.stat-card.c-amber::before{background:linear-gradient(90deg,var(--amber),#fcd34d)}
+.stat-card.c-pink::before{background:linear-gradient(90deg,var(--pink),#f472b6)}
+.stat-icon{
+  width:44px;height:44px;border-radius:var(--radius-sm);display:flex;align-items:center;
+  justify-content:center;font-size:18px;margin-bottom:14px
+}
+.stat-icon.c-purple{background:var(--primary-dim);color:var(--primary2)}
+.stat-icon.c-green{background:var(--green-dim);color:var(--green)}
+.stat-icon.c-amber{background:var(--amber-dim);color:var(--amber)}
+.stat-icon.c-pink{background:rgba(236,72,153,.15);color:var(--pink)}
+.stat-val{font-size:28px;font-weight:800;line-height:1.1;margin-bottom:4px}
+.stat-label{font-size:12px;color:var(--text2);font-weight:500}
+.stat-trend{display:flex;align-items:center;gap:4px;font-size:11px;margin-top:8px;font-weight:600}
+.stat-trend.up{color:var(--green)}
+.stat-trend.down{color:var(--red)}
+.stat-trend span{color:var(--text3);font-weight:400}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:15px;font-weight:700}
+.card-subtitle{font-size:12px;color:var(--text3);margin-top:2px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+
+/* ── CHART ── */
+.chart-wrap{position:relative;height:220px}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;border-radius:var(--radius-sm)}
+table{width:100%;border-collapse:collapse}
+th{background:var(--card2);padding:10px 16px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--card2)}
+.td-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--pink));display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.badge-green{background:var(--green-dim);color:var(--green)}
+.badge-red{background:var(--red-dim);color:var(--red)}
+.badge-amber{background:var(--amber-dim);color:var(--amber)}
+.badge-blue{background:var(--blue-dim);color:var(--blue)}
+.badge-purple{background:var(--primary-dim);color:var(--primary2)}
+.badge-gray{background:rgba(150,160,190,.15);color:var(--text3)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:var(--radius-sm);font-weight:600;font-size:13px;transition:all var(--transition);cursor:pointer;border:none}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary2);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-outline:hover{border-color:var(--primary);color:var(--primary2)}
+.btn-danger{background:var(--red-dim);color:var(--red)}
+.btn-danger:hover{background:rgba(239,68,68,.25)}
+.btn-success{background:var(--green-dim);color:var(--green)}
+.btn-success:hover{background:rgba(34,197,94,.25)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-xs{padding:4px 8px;font-size:11px}
+.btn-icon{width:32px;height:32px;padding:0;justify-content:center;border-radius:var(--radius-sm)}
+
+/* ── FORMS ── */
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:6px}
+.form-input{
+  width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:10px 14px;color:var(--text);outline:none;transition:border var(--transition)
+}
+.form-input:focus{border-color:var(--primary)}
+.form-input::placeholder{color:var(--text3)}
+textarea.form-input{resize:vertical;min-height:90px}
+select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ba3c0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+
+/* ── MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
+  z-index:1000;display:none;align-items:center;justify-content:center;padding:16px
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:28px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;
+  box-shadow:var(--shadow-lg);animation:slideUp .2s ease
+}
+.modal-lg{max-width:700px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-size:17px;font-weight:700}
+.modal-close{width:30px;height:30px;border-radius:var(--radius-sm);background:var(--card2);display:flex;align-items:center;justify-content:center;color:var(--text2);cursor:pointer;transition:background var(--transition)}
+.modal-close:hover{background:var(--red-dim);color:var(--red)}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── TOAST ── */
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:360px}
+.toast{
+  display:flex;align-items:flex-start;gap:12px;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);animation:toastIn .3s ease;
+  min-width:280px
+}
+.toast-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px}
+.toast.success .toast-icon{background:var(--green-dim);color:var(--green)}
+.toast.error .toast-icon{background:var(--red-dim);color:var(--red)}
+.toast.info .toast-icon{background:var(--primary-dim);color:var(--primary2)}
+.toast.warning .toast-icon{background:var(--amber-dim);color:var(--amber)}
+.toast-body .toast-title{font-weight:600;font-size:13px}
+.toast-body .toast-msg{font-size:12px;color:var(--text2);margin-top:2px}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+/* ── LOGIN ── */
+#login-screen{
+  position:fixed;inset:0;background:var(--bg);display:flex;z-index:500;
+  align-items:center;justify-content:center
+}
+.login-bg{
+  position:absolute;inset:0;overflow:hidden
+}
+.login-bg-blob{
+  position:absolute;border-radius:50%;filter:blur(80px);opacity:.2
+}
+.login-bg-blob:nth-child(1){width:600px;height:600px;background:var(--primary);top:-200px;right:-200px}
+.login-bg-blob:nth-child(2){width:400px;height:400px;background:var(--pink);bottom:-100px;left:-100px}
+.login-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:36px 40px;width:100%;max-width:420px;position:relative;z-index:1;
+  box-shadow:var(--shadow-lg)
+}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.login-logo .logo-icon{width:44px;height:44px;font-size:16px}
+.login-logo .logo-text{font-size:20px}
+.login-title{font-size:24px;font-weight:800;margin-bottom:6px}
+.login-sub{color:var(--text2);font-size:14px;margin-bottom:28px}
+.login-tabs{display:flex;gap:4px;background:var(--bg3);border-radius:var(--radius-sm);padding:4px;margin-bottom:24px}
+.login-tab{flex:1;padding:8px;border-radius:6px;font-size:13px;font-weight:600;color:var(--text3);transition:all var(--transition);text-align:center;cursor:pointer}
+.login-tab.active{background:var(--primary);color:#fff}
+.login-demo{background:var(--primary-dim);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--text2);margin-top:16px;text-align:center}
+.login-demo strong{color:var(--primary2)}
+
+/* ── SEARCH/FILTER BAR ── */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.toolbar-search{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0 12px;height:36px;flex:1;min-width:180px;transition:border var(--transition)}
+.toolbar-search:focus-within{border-color:var(--primary)}
+.toolbar-search input{background:none;border:none;outline:none;color:var(--text);font-size:13px;width:100%}
+.toolbar-search input::placeholder{color:var(--text3)}
+.toolbar-search i{color:var(--text3);font-size:12px}
+select.filter-select{background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0 32px 0 10px;height:36px;color:var(--text2);outline:none;font-size:13px;font-family:inherit;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%239ba3c0' d='M5 7L0 2h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;cursor:pointer}
+
+/* ── PAGINATION ── */
+.pagination{display:flex;align-items:center;justify-content:space-between;margin-top:16px;flex-wrap:wrap;gap:8px}
+.pagination-info{font-size:12px;color:var(--text3)}
+.pagination-btns{display:flex;gap:4px}
+.pg-btn{width:32px;height:32px;border-radius:var(--radius-sm);background:var(--card2);border:1px solid var(--border);color:var(--text2);font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--transition)}
+.pg-btn:hover,.pg-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.pg-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── NOTICE BOARD ── */
+.ticker-wrap{background:var(--primary-dim);border:1px solid var(--primary);border-radius:var(--radius-sm);padding:10px 16px;display:flex;align-items:center;gap:12px;margin-bottom:20px;overflow:hidden}
+.ticker-label{background:var(--primary);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.ticker-text{font-size:13px;color:var(--primary2);white-space:nowrap;animation:ticker 20s linear infinite}
+@keyframes ticker{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+.notice-item{background:var(--card2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;transition:border-color var(--transition)}
+.notice-item:hover{border-color:var(--primary)}
+.notice-item-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
+.notice-item-title{font-weight:600;font-size:14px}
+.notice-item-msg{font-size:13px;color:var(--text2);line-height:1.7}
+.notice-item-meta{display:flex;align-items:center;gap:12px;margin-top:8px;font-size:11px;color:var(--text3)}
+
+/* ── SHOUTBOX ── */
+.shout-list{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow-y:auto;padding-right:4px;margin-bottom:16px}
+.shout-item{display:flex;gap:10px}
+.shout-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--cyan));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0}
+.shout-body{background:var(--card2);border:1px solid var(--border);border-radius:0 var(--radius) var(--radius) var(--radius);padding:10px 14px;flex:1;min-width:0}
+.shout-meta{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.shout-name{font-weight:600;font-size:13px}
+.shout-time{font-size:11px;color:var(--text3)}
+.shout-text{font-size:13px;color:var(--text2);word-break:break-word}
+.shout-input-row{display:flex;gap:8px;align-items:flex-end}
+.shout-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);resize:none;height:80px;outline:none;transition:border var(--transition);font-family:inherit;font-size:13px}
+.shout-input:focus{border-color:var(--primary)}
+
+/* ── ACTIVITY FEED ── */
+.activity-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
 .activity-item:last-child{border-bottom:none}
-.activity-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0}
-.activity-text{font-size:.85rem;color:var(--text);line-height:1.4}
-.activity-time{font-size:.72rem;color:var(--text-light);margin-top:.2rem}
-/* SHOUTBOX */
-.shout-list{max-height:360px;overflow-y:auto;margin-bottom:1.2rem;display:flex;flex-direction:column;gap:.75rem}
-.shout-item{display:flex;gap:.75rem;align-items:flex-start}
-.shout-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0}
-.shout-bubble{background:var(--bg);border-radius:0 12px 12px 12px;padding:.6rem .9rem;flex:1}
-.shout-name{font-size:.75rem;font-weight:700;color:var(--accent);margin-bottom:.2rem}
-.shout-text{font-size:.85rem;color:var(--text)}
-.shout-time{font-size:.7rem;color:var(--text-light);margin-top:.2rem}
-/* LOGIN */
-.login-wrap{min-height:100vh;background:linear-gradient(135deg,var(--sidebar),var(--primary));display:flex;align-items:center;justify-content:center;padding:1rem}
-.login-card{background:#fff;border-radius:20px;padding:2.5rem;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-.login-logo{display:flex;align-items:center;gap:.75rem;margin-bottom:2rem;justify-content:center}
-.login-title{font-size:1.5rem;font-weight:800;color:var(--text);margin-bottom:.3rem;text-align:center}
-.login-sub{font-size:.875rem;color:var(--text-light);text-align:center;margin-bottom:1.8rem}
-/* CHART PLACEHOLDER */
-.chart-bar{display:flex;align-items:flex-end;gap:.4rem;height:120px;padding-top:1rem}
-.bar{flex:1;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--accent),var(--accent2));transition:height .3s;position:relative;cursor:pointer;min-height:8px}
-.bar:hover{opacity:.8}
-.bar-label{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:.65rem;color:var(--text-light);white-space:nowrap}
-.chart-wrap{overflow:hidden;padding-bottom:24px}
-/* RESPONSIVE */
-@media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
-@media(max-width:600px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.stats-row{grid-template-columns:1fr}}
-/* TOAST */
-.toast{position:fixed;bottom:2rem;right:2rem;background:var(--sidebar);color:#fff;padding:.9rem 1.4rem;border-radius:12px;font-size:.875rem;font-weight:500;z-index:9999;transform:translateY(100px);opacity:0;transition:all .3s;display:flex;align-items:center;gap:.5rem}
-.toast.show{transform:translateY(0);opacity:1}
-.toast i{color:var(--green)}
+.act-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.act-icon.add{background:var(--green-dim);color:var(--green)}
+.act-icon.del{background:var(--red-dim);color:var(--red)}
+.act-icon.edit{background:var(--blue-dim);color:var(--blue)}
+.act-icon.login{background:var(--primary-dim);color:var(--primary2)}
+.act-icon.notice{background:var(--amber-dim);color:var(--amber)}
+.act-text{flex:1;min-width:0}
+.act-msg{font-size:13px;line-height:1.5}
+.act-msg strong{color:var(--text)}
+.act-time{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* ── PROFILE ── */
+.profile-hero{background:linear-gradient(135deg,var(--primary),var(--pink));border-radius:var(--radius-lg);padding:32px;margin-bottom:20px;position:relative;overflow:hidden}
+.profile-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='25' fill='none' stroke='rgba(255,255,255,.08)' stroke-width='2'/%3E%3C/svg%3E") repeat;opacity:.5}
+.profile-hero-content{position:relative;display:flex;align-items:center;gap:20px}
+.profile-big-av{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.2);border:3px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:26px;color:#fff}
+.profile-hero-info{color:#fff}
+.profile-hero-info h2{font-size:22px;font-weight:800}
+.profile-hero-info p{opacity:.8;font-size:14px}
+
+/* ── SETTINGS ── */
+.settings-section{margin-bottom:28px}
+.settings-section-title{font-size:15px;font-weight:700;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-row-label{font-size:13px;font-weight:600}
+.settings-row-desc{font-size:12px;color:var(--text3);margin-top:2px}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:12px;cursor:pointer;transition:background var(--transition)}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform var(--transition)}
+.toggle input:checked + .toggle-slider{background:var(--primary)}
+.toggle input:checked + .toggle-slider::before{transform:translateX(20px)}
+
+/* ── EMPTY STATES ── */
+.empty-state{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-state i{font-size:40px;margin-bottom:12px;opacity:.4}
+.empty-state p{font-size:13px}
+.empty-state h3{font-size:15px;font-weight:600;color:var(--text2);margin-bottom:6px}
+
+/* ── PROGRESS ── */
+.progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;border-radius:3px;background:var(--primary);transition:width .8s ease}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .sidebar{left:calc(-1 * var(--sidebar-w))}
+  .sidebar.open{left:0;box-shadow:var(--shadow-lg)}
+  .main-wrap{margin-left:0}
+  .menu-btn{display:flex}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .search-bar input{width:120px}
+  .page-area{padding:16px}
+  .sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99;display:none}
+  .sidebar.open ~ .sidebar-overlay,.sidebar-overlay.visible{display:block}
+}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+    <!-- ========== DASHBOARD PAGE ========== -->
+    <section class="page active" id="page-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card purple" onclick="navigateTo('users')">
+          <div class="stat-glow"></div>
+          <div class="stat-icon"><i class="fa fa-users"></i></div>
+          <div class="stat-value" id="stat-users">0</div>
+          <div class="stat-label">Total Users</div>
+          <div class="stat-trend up"><i class="fa fa-arrow-trend-up"></i><span class="trend-val">+12%</span><span class="trend-label">vs last month</span></div>
+          <canvas class="stat-sparkline" id="spark-users"></canvas>
+        </div>
+        <div class="stat-card cyan" onclick="navigateTo('posts')">
+          <div class="stat-glow"></div>
+          <div class="stat-icon"><i class="fa fa-file-lines"></i></div>
+          <div class="stat-value" id="stat-posts">0</div>
+          <div class="stat-label">Total Posts</div>
+          <div class="stat-trend up"><i class="fa fa-arrow-trend-up"></i><span class="trend-val">+8%</span><span class="trend-label">vs last month</span></div>
+          <canvas class="stat-sparkline" id="spark-posts"></canvas>
+        </div>
+        <div class="stat-card green" onclick="navigateTo('notices')">
+          <div class="stat-glow"></div>
+          <div class="stat-icon"><i class="fa fa-bullhorn"></i></div>
+          <div class="stat-value" id="stat-notices">0</div>
+          <div class="stat-label">Active Notices</div>
+          <div class="stat-trend up"><i class="fa fa-arrow-trend-up"></i><span class="trend-val">+3%</span><span class="trend-label">vs last month</span></div>
+          <canvas class="stat-sparkline" id="spark-notices"></canvas>
+        </div>
+        <div class="stat-card amber" onclick="navigateTo('shoutbox')">
+          <div class="stat-glow"></div>
+          <div class="stat-icon"><i class="fa fa-comments"></i></div>
+          <div class="stat-value" id="stat-shouts">0</div>
+          <div class="stat-label">Shoutbox Messages</div>
+          <div class="stat-trend up"><i class="fa fa-arrow-trend-up"></i><span class="trend-val">+24%</span><span class="trend-label">vs last month</span></div>
+          <canvas class="stat-sparkline" id="spark-shouts"></canvas>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa fa-chart-line"></i> Monthly Activity</div>
+            <div class="card-actions">
+              <select class="form-input form-select" style="width:auto;padding:6px 32px 6px 10px;font-size:12px" onchange="updateMainChart(this.value)">
+                <option value="all">All Metrics</option>
+                <option value="users">Users</option>
+                <option value="posts">Posts</option>
+              </select>
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="main-chart"></canvas></div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--primary)"></div>Users</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Posts</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div>Notices</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa fa-chart-pie"></i> User Roles</div>
+          </div>
+          <div class="chart-wrap" style="height:220px"><canvas id="role-chart"></canvas></div>
+          <div class="chart-legend" id="role-legend"></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa fa-clock-rotate-left"></i> Recent Activity</div>
+            <button class="btn btn-sm btn-ghost" onclick="navigateTo('posts')">View all</button>
+          </div>
+          <div id="activity-feed"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa fa-users"></i> Latest Users</div>
+            <button class="btn btn-sm btn-ghost" onclick="navigateTo('users')">View all</button>
+          </div>
+          <div id="latest-users"></div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa fa-bullhorn"></i> Active Notices</div>
+            <button class="btn btn-sm btn-ghost" onclick="navigateTo('notices')">View all</button>
+          </div>
+          <div id="dash-notices"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== USERS PAGE ========== -->
+    <section class="page" id="page-users">
+      <div class="page-header-row">
+        <div class="page-header">
+          <h2>Users</h2>
+          <p>Manage all registered users and their roles</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAddUserModal()">
+          <i class="fa fa-user-plus"></i> Add User
+        </button>
+      </div>
+      <div class="card">
+        <div class="table-toolbar">
+          <div class="table-search">
+            <i class="fa fa-magnifying-glass"></i>
+            <input type="text" id="user-search" placeholder="Search by name or email..." oninput="filterUsers(this.value)">
+          </div>
+          <button class="table-filter-btn" data-role="" onclick="setUserRoleFilter('',this)"><i class="fa fa-filter"></i> All</button>
+          <button class="table-filter-btn" data-role="admin" onclick="setUserRoleFilter('admin',this)">Admins</button>
+          <button class="table-filter-btn" data-role="moderator" onclick="setUserRoleFilter('moderator',this)">Mods</button>
+          <button class="table-filter-btn" data-role="user" onclick="setUserRoleFilter('user',this)">Users</button>
+          <select class="table-filter-btn" style="cursor:pointer" onchange="setUserSortField(this.value)">
+            <option value="name">Sort: Name</option>
+            <option value="date">Sort: Date</option>
+            <option value="role">Sort: Role</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table id="users-table">
+            <thead>
+              <tr>
+                <th onclick="sortUsers('name')">User <i class="fa fa-sort"></i></th>
+                <th onclick="sortUsers('email')">Email <i class="fa fa-sort"></i></th>
+                <th onclick="sortUsers('role')">Role <i class="fa fa-sort"></i></th>
+                <th onclick="sortUsers('status')">Status <i class="fa fa-sort"></i></th>
+                <th onclick="sortUsers('date')">Joined <i class="fa fa-sort"></i></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <div class="pagination-info" id="users-page-info"></div>
+          <div id="users-pagination"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== POSTS PAGE ========== -->
+    <section class="page" id="page-posts">
+      <div class="page-header-row">
+        <div class="page-header">
+          <h2>Posts</h2>
+          <p>Manage all community posts and content</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAddPostModal()">
+          <i class="fa fa-plus"></i> New Post
+        </button>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="table-toolbar">
+          <div class="table-search">
+            <i class="fa fa-magnifying-glass"></i>
+            <input type="text" id="post-search" placeholder="Search posts..." oninput="filterPosts(this.value)">
+          </div>
+          <button class="table-filter-btn active" data-status="all" onclick="setPostFilter('all',this)">All</button>
+          <button class="table-filter-btn" data-status="published" onclick="setPostFilter('published',this)">Published</button>
+          <button class="table-filter-btn" data-status="draft" onclick="setPostFilter('draft',this)">Drafts</button>
+          <button class="table-filter-btn" data-status="pinned" onclick="setPostFilter('pinned',this)">Pinned</button>
+        </div>
+      </div>
+      <div id="posts-list"></div>
+      <div class="pagination" style="margin-top:16px">
+        <div class="pagination-info" id="posts-page-info"></div>
+        <div id="posts-pagination"></div>
+      </div>
+    </section>
+
+    <!-- ========== NOTICES PAGE ========== -->
+    <section class="page" id="page-notices">
+      <div class="page-header-row">
+        <div class="page-header">
+          <h2>Notice Board</h2>
+          <p>Publish announcements for all users</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAddNoticeModal()">
+          <i class="fa fa-plus"></i> Add Notice
+        </button>
+      </div>
+      <div id="notices-list"></div>
+    </section>
+
+    <!-- ========== SHOUTBOX PAGE ========== -->
+    <section class="page" id="page-shoutbox">
+      <div class="page-header-row">
+        <div class="page-header">
+          <h2>Shoutbox</h2>
+          <p>Live community chat and messages</p>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="clearShoutbox()" id="clear-shouts-btn" style="display:none">
+          <i class="fa fa-trash"></i> Clear All
+        </button>
+      </div>
+      <div class="card">
+        <div class="shout-list" id="shout-list"></div>
+        <div class="shout-compose">
+          <textarea class="shout-input" id="shout-input" placeholder="Type a message... (Press Ctrl+Enter to send)" rows="2" onkeydown="shoutKeyHandler(event)"></textarea>
+          <button class="btn btn-primary" onclick="sendShout()" style="align-self:flex-end">
+            <i class="fa fa-paper-plane"></i> Send
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== PROFILE PAGE ========== -->
+    <section class="page" id="page-profile">
+      <div class="profile-header-card" id="profile-header">
+        <div class="avatar-xl" id="profile-avatar-xl" style="background:linear-gradient(135deg,var(--primary),var(--accent2))">A</div>
+        <div class="profile-info">
+          <h2 id="profile-name">Admin User</h2>
+          <p id="profile-email">admin@adminzone.com</p>
+          <div style="margin-top:8px"><span class="badge-wrap badge-primary" id="profile-role-badge">Administrator</span></div>
+          <div class="profile-stats">
+            <div class="profile-stat"><div class="val" id="ps-posts">0</div><div class="lbl">Posts</div></div>
+            <div class="profile-stat"><div class="val" id="ps-shouts">0</div><div class="lbl">Shouts</div></div>
+            <div class="profile-stat"><div class="val" id="ps-notices">0</div><div class="lbl">Notices</div></div>
+          </div>
+        </div>
+        <div style="margin-left:auto">
+          <button class="btn btn-outline btn-sm" onclick="editProfile()"><i class="fa fa-pen"></i> Edit Profile</button>
+        </div>
+      </div>
+      <div class="profile-grid">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:16px"><i class="fa fa-circle-info"></i> Account Info</div>
+          <div id="profile-info-content"></div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:16px"><i class="fa fa-file-lines"></i> My Recent Posts</div>
+          <div id="profile-posts"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SETTINGS PAGE ========== -->
+    <section class="page" id="page-settings">
+      <div class="page-header"><h2>Settings</h2><p>Manage your preferences and account</p></div>
+      <div class="card">
+        <div class="settings-tabs">
+          <button class="settings-tab active" onclick="setSettingsTab('general',this)">General</button>
+          <button class="settings-tab" onclick="setSettingsTab('appearance',this)">Appearance</button>
+          <button class="settings-tab" onclick="setSettingsTab('security',this)">Security</button>
+          <button class="settings-tab" onclick="setSettingsTab('data',this)">Data</button>
+        </div>
+
+        <div class="settings-section active" id="settings-general">
+          <div class="setting-row">
+            <div class="setting-info"><h4>Site Name</h4><p>Display name for your admin zone</p></div>
+            <input class="form-input" style="width:200px" id="setting-site-name" value="AdminZone">
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><h4>Admin Email</h4><p>Primary contact email</p></div>
+            <input class="form-input" style="width:220px" id="setting-admin-email" value="admin@adminzone.com">
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><h4>Timezone</h4><p>Your local timezone</p></div>
+            <select class="form-input form-select" style="width:180px" id="setting-timezone">
+              <option>UTC+5:30 (IST)</option>
+              <option>UTC+0 (GMT)</option>
+              <option>UTC-5 (EST)</option>
+              <option>UTC+8 (CST)</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><h4>Items Per Page</h4><p>Table rows per page</p></div>
+            <select class="form-input form-select" style="width:100px" id="setting-per-page" onchange="updatePerPage(this.value)">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+          <div style="margin-top:16px">
+            <button class="btn btn-primary" style="width:auto" onclick="saveGeneralSettings()"><i class="fa fa-floppy-disk"></i> Save Changes</button>
+          </div>
+        </div>
+
+        <div class="settings-section" id="settings-appearance">
+          <div class="setting-row">
+            <div class="setting-info"><h4>Dark Mode</h4><p>Use dark color scheme</p></div>
+            <label class="toggle"><input type="checkbox" id="toggle-dark" onchange="applyThemeToggle(this.checked)" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><h4>Compact Sidebar</h4><p>Collapse sidebar to icon mode</p></div>
+            <label class="toggle"><input type="checkbox" id="toggle-compact" onchange="applyCompactSidebar(this.checked)"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><h4>Animations</h4><p>Enable UI transitions and animations</p></div>
+            <label class="toggle"><input type="checkbox" id="toggle-anim" checked onchange="applyAnimations(this.checked)"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><h4>Accent Color</h4><p>Primary color for buttons and highlights</p></div>
+            <div style="display:flex;gap:8px">
+              <div class="color-swatch" data-color="#6366f1" onclick="setAccent('#6366f1',this)" style="width:28px;height:28px;border-radius:50%;background:#6366f1;cursor:pointer;border:2px solid white"></div>
+              <div class="color-swatch" data-color="#0ea5e9" onclick="setAccent('#0ea5e9',this)" style="width:28px;height:28px;border-radius:50%;background:#0ea5e9;cursor:pointer;border:2px solid transparent"></div>
+              <div class="color-swatch" data-color="#10b981" onclick="setAccent('#10b981',this)" style="width:28px;height:28px;border-radius:50%;background:#10b981;cursor:pointer;border:2px solid transparent"></div>
+              <div class="color-swatch" data-color="#f59e0b" onclick="setAccent('#f59e0b',this)" style="width:28px;height:28px;border-radius:50%;background:#f59e0b;cursor:pointer;border:2px solid transparent"></div>
+              <div class="color-swatch" data-color="#ef4444" onclick="setAccent('#ef4444',this)" style="width:28px;height:28px;border-radius:50%;background:#ef4444;cursor:pointer;border:2px solid transparent"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section" id="settings-security">
+          <div class="setting-row">
+            <div class="setting-info"><h4>Change Password</h4><p>Update your account password</p></div>
+            <button class="btn btn-outline btn-sm" onclick="openChangePasswordModal()">Change Password</button>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><h4>Login Notifications</h4><p>Get notified on new logins</p></div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><h4>Session Timeout</h4><p>Auto sign-out after inactivity</p></div>
+            <select class="form-input form-select" style="width:160px">
+              <option>30 minutes</option>
+              <option selected>1 hour</option>
+              <option>4 hours</option>
+              <option>Never</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section" id="settings-data">
+          <div class="setting-row">
+            <div class="setting-info"><h4>Export Data</h4><p>Download all data as JSON</p></div>
+            <button class="btn btn-outline btn-sm" onclick="exportData()"><i class="fa fa-download"></i> Export JSON</button>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><h4>Reset Demo Data</h4><p>Restore default seed data</p></div>
+            <button class="btn btn-warning btn-sm" style="background:var(--warning);color:white" onclick="resetDemoData()"><i class="fa fa-rotate-right"></i> Reset</button>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info" style="color:var(--danger)"><h4>Danger Zone</h4><p>Permanently delete all local data</p></div>
+            <button class="btn btn-danger btn-sm" onclick="dangerZone()"><i class="fa fa-trash"></i> Clear All Data</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============================================================
+     MODALS
+     ============================================================ -->
+<!-- ADD USER MODAL -->
+<div class="modal-overlay" id="add-user-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="user-modal-title"><i class="fa fa-user-plus" style="color:var(--primary)"></i> Add User</h3>
+      <button class="modal-close" onclick="closeModal('add-user-modal')"><i class="fa fa-xmark"></i></button>
+    </div>
+    <form id="user-form" onsubmit="saveUser(event)">
+      <div class="grid-2">
+        <div class="form-row">
+          <label class="form-label">First Name*</label>
+          <input class="form-input" id="u-fname" required placeholder="First name">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Last Name*</label>
+          <input class="form-input" id="u-lname" required placeholder="Last name">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Email*</label>
+          <input class="form-input" type="email" id="u-email" required placeholder="email@example.com">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Username</label>
+          <input class="form-input" id="u-username" placeholder="username">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Password*</label>
+          <input class="form-input" type="password" id="u-password" required placeholder="Min. 6 chars">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Role</label>
+          <select class="form-input form-select" id="u-role">
+            <option value="user">User</option>
+            <option value="moderator">Moderator</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="form-row" style="grid-column:1/-1">
+          <label class="form-label">Bio</label>
+          <textarea class="form-input" id="u-bio" rows="2" placeholder="Short bio..."></textarea>
+        </div>
+      </div>
+      <input type="hidden" id="u-id">
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('add-user-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="width:auto" id="u-save-btn">
+          <i class="fa fa-floppy-disk"></i> Save User
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ADD POST MODAL -->
+<div class="modal-overlay" id="add-post-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="post-modal-title"><i class="fa fa-file-pen" style="color:var(--primary)"></i> New Post</h3>
+      <button class="modal-close" onclick="closeModal('add-post-modal')"><i class="fa fa-xmark"></i></button>
+    </div>
+    <form id="post-form" onsubmit="savePost(event)">
+      <div class="form-row">
+        <label class="form-label">Post Title*</label>
+        <input class="form-input" id="p-title" required placeholder="Enter post title...">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Content*</label>
+        <textarea class="form-input" id="p-content" required rows="5" placeholder="Write your post content here..."></textarea>
+      </div>
+      <div class="grid-2">
+        <div class="form-row">
+          <label class="form-label">Category</label>
+          <select class="form-input form-select" id="p-category">
+            <option>General</option>
+            <option>Announcement</option>
+            <option>News</option>
+            <option>Tutorial</option>
+            <option>Discussion</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Status</label>
+          <select class="form-input form-select" id="p-status">
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" style="display:flex;align-items:center;gap:10px">
+        <label class="toggle" style="margin:0"><input type="checkbox" id="p-pinned"><span class="toggle-slider"></span></label>
+        <span class="form-label" style="margin:0">Pin this post</span>
+      </div>
+      <input type="hidden" id="p-id">
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('add-post-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="width:auto">
+          <i class="fa fa-floppy-disk"></i> Save Post
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ADD NOTICE MODAL -->
+<div class="modal-overlay" id="add-notice-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="notice-modal-title"><i class="fa fa-bullhorn" style="color:var(--primary)"></i> Add Notice</h3>
+      <button class="modal-close" onclick="closeModal('add-notice-modal')"><i class="fa fa-xmark"></i></button>
+    </div>
+    <form id="notice-form" onsubmit="saveNotice(event)">
+      <div class="form-row">
+        <label class="form-label">Title*</label>
+        <input class="form-input" id="n-title" required placeholder="Notice title">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Message*</label>
+        <textarea class="form-input" id="n-body" required rows="4" placeholder="Write the notice here..."></textarea>
+      </div>
+      <div class="grid-2">
+        <div class="form-row">
+          <label class="form-label">Priority</label>
+          <select class="form-input form-select" id="n-priority">
+            <option value="normal">Normal</option>
+            <option value="important">Important</option>
+            <option value="urgent">Urgent</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Expires On</label>
+          <input class="form-input" type="date" id="n-expires">
+        </div>
+      </div>
+      <input type="hidden" id="n-id">
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('add-notice-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="width:auto">
+          <i class="fa fa-floppy-disk"></i> Save Notice
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h3 id="confirm-title">Confirm Action</h3>
+      <button class="modal-close" onclick="closeModal('confirm-modal')"><i class="fa fa-xmark"></i></button>
+    </div>
+    <p id="confirm-message" style="font-size:14px;color:var(--text2);margin-bottom:8px"></p>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('confirm-modal')">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok" onclick="confirmAction()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal-overlay" id="edit-profile-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fa fa-user-pen" style="color:var(--primary)"></i> Edit Profile</h3>
+      <button class="modal-close" onclick="closeModal('edit-profile-modal')"><i class="fa fa-xmark"></i></button>
+    </div>
+    <form id="profile-form" onsubmit="saveProfileChanges(event)">
+      <div class="grid-2">
+        <div class="form-row">
+          <label class="form-label">First Name</label>
+          <input class="form-input" id="ep-fname">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Last Name</label>
+          <input class="form-input" id="ep-lname">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Bio</label>
+        <textarea class="form-input" id="ep-bio" rows="3" placeholder="Tell about yourself..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('edit-profile-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="width:auto"><i class="fa fa-floppy-disk"></i> Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal-overlay" id="change-password-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h3><i class="fa fa-lock" style="color:var(--primary)"></i> Change Password</h3>
+      <button class="modal-close" onclick="closeModal('change-password-modal')"><i class="fa fa-xmark"></i></button>
+    </div>
+    <form onsubmit="changePassword(event)">
+      <div class="form-row">
+        <label class="form-label">Current Password</label>
+        <input class="form-input" type="password" id="cp-current" placeholder="Current password">
+      </div>
+      <div class="form-row">
+        <label class="form-label">New Password</label>
+        <input class="form-input" type="password" id="cp-new" placeholder="New password (min. 6 chars)">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Confirm New Password</label>
+        <input class="form-input" type="password" id="cp-confirm" placeholder="Repeat new password">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('change-password-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="width:auto"><i class="fa fa-key"></i> Update Password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- SIDEBAR OVERLAY for mobile -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
 <!-- SIDEBAR -->
-<div class="sidebar" id="sidebar">
+<div id="app">
+<aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <div class="logo-icon">AZ</div>
     <div class="logo-text">Admin<span>Zone</span></div>
   </div>
+  <div class="sidebar-user">
+    <div class="su-row">
+      <div class="su-av" id="sidebarAv">A</div>
+      <div class="su-info">
+        <div class="su-name" id="sidebarName">Administrator</div>
+        <div class="su-role" id="sidebarRole">Admin</div>
+      </div>
+    </div>
+  </div>
   <nav class="sidebar-nav">
     <div class="nav-section">Main</div>
     <button class="nav-item active" onclick="showPage('dashboard',this)"><i class="fas fa-th-large"></i> Dashboard</button>
-    <button class="nav-item" onclick="showPage('users',this)"><i class="fas fa-users"></i> Users <span class="nav-badge" id="userCount">0</span></button>
-    <button class="nav-item" onclick="showPage('noticeboard',this)"><i class="fas fa-bullhorn"></i> Notice Board <span class="nav-badge" id="noticeCount">0</span></button>
-    <button class="nav-item" onclick="showPage('posts',this)"><i class="fas fa-newspaper"></i> Posts</button>
-    <button class="nav-item" onclick="showPage('shoutbox',this)"><i class="fas fa-comments"></i> Shoutbox</button>
+    <button class="nav-item" onclick="showPage('users',this)"><i class="fas fa-users"></i> Users <span class="nav-badge" id="navUserCount">0</span></button>
+    <button class="nav-item" onclick="showPage('noticeboard',this)"><i class="fas fa-bullhorn"></i> Notice Board <span class="nav-badge" id="navNoticeCount">0</span></button>
+    <button class="nav-item" onclick="showPage('posts',this)"><i class="fas fa-newspaper"></i> Posts <span class="nav-badge" id="navPostCount">0</span></button>
+    <button class="nav-item" onclick="showPage('shoutbox',this)"><i class="fas fa-comments"></i> Shoutbox <span class="nav-badge" id="navShoutCount">0</span></button>
     <div class="nav-section">Admin</div>
-    <button class="nav-item" onclick="showPage('profile',this)"><i class="fas fa-user-shield"></i> My Profile</button>
+    <button class="nav-item" onclick="showPage('profile',this)"><i class="fas fa-user-circle"></i> My Profile</button>
     <button class="nav-item" onclick="showPage('settings',this)"><i class="fas fa-cog"></i> Settings</button>
-    <button class="nav-item" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
   </nav>
   <div class="sidebar-footer">
-    <div class="user-info">
-      <div class="user-avatar" id="sidebarAvatar">A</div>
-      <div><div class="user-name" id="sidebarName">Admin</div><div class="user-role" id="sidebarRole">Administrator</div></div>
-    </div>
+    <button class="logout-btn" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
   </div>
-</div>
-<!-- MAIN -->
-<div class="main" id="mainContent">
-  <div class="topbar">
+</aside>
+
+<!-- MAIN WRAP -->
+<div class="main-wrap" id="mainWrap">
+  <!-- TOPBAR -->
+  <header class="topbar">
     <div class="topbar-left">
-      <button class="icon-btn" onclick="toggleSidebar()" style="display:none" id="menuBtn"><i class="fas fa-bars"></i></button>
-      <div class="page-title" id="pageTitle">Dashboard</div>
+      <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <div>
+        <div class="page-title" id="pageTitle">Dashboard</div>
+        <div class="breadcrumb" id="breadcrumb"><i class="fas fa-home"></i> Home</div>
+      </div>
     </div>
     <div class="topbar-right">
-      <div class="icon-btn" title="Notifications"><i class="fas fa-bell"></i><span class="notif-dot"></span></div>
-      <div class="icon-btn" title="Refresh" onclick="loadAll()"><i class="fas fa-sync-alt"></i></div>
+      <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Quick search..." id="globalSearch" oninput="globalSearchFn(this.value)">
+      </div>
+      <div class="icon-btn" title="Notifications" onclick="toggleNotifPanel()" id="notifBtn">
+        <i class="fas fa-bell"></i>
+        <span class="notif-dot" id="notifDot" style="display:none"></span>
+      </div>
+      <div class="icon-btn" title="Toggle Theme" onclick="toggleTheme()">
+        <i class="fas fa-moon" id="themeIcon"></i>
+      </div>
+      <div class="user-menu" onclick="showPage('profile', document.querySelector('.nav-item:nth-child(9)'))">
+        <div class="user-menu-av" id="topbarAv">A</div>
+        <div class="user-menu-name" id="topbarName">Admin</div>
+        <i class="fas fa-chevron-down" style="font-size:10px;color:var(--text3)"></i>
+      </div>
     </div>
-  </div>
-  <div class="content">
+  </header>
+
+  <!-- PAGE AREA -->
+  <main class="page-area">
 
     <!-- DASHBOARD PAGE -->
     <div class="page active" id="page-dashboard">
-      <div class="stats-row">
-        <div class="stat-card" style="--c:var(--accent)">
-          <div class="stat-top"><div class="stat-icon" style="background:#ede9fe;color:var(--accent)"><i class="fas fa-users"></i></div><span class="stat-trend up" id="userTrend">+0%</span></div>
-          <div class="stat-num" id="dashUsers">0</div><div class="stat-lbl">Total Users</div>
+      <div class="stats-grid">
+        <div class="stat-card c-purple">
+          <div class="stat-icon c-purple"><i class="fas fa-users"></i></div>
+          <div class="stat-val" id="dashUsers">0</div>
+          <div class="stat-label">Total Users</div>
+          <div class="stat-trend up" id="userTrend"><i class="fas fa-arrow-up"></i> +12% <span>this month</span></div>
         </div>
-        <div class="stat-card" style="--c:var(--green)">
-          <div class="stat-top"><div class="stat-icon" style="background:#dcfce7;color:var(--green)"><i class="fas fa-newspaper"></i></div><span class="stat-trend up" id="postTrend">0</span></div>
-          <div class="stat-num" id="dashPosts">0</div><div class="stat-lbl">Total Posts</div>
+        <div class="stat-card c-green">
+          <div class="stat-icon c-green"><i class="fas fa-newspaper"></i></div>
+          <div class="stat-val" id="dashPosts">0</div>
+          <div class="stat-label">Total Posts</div>
+          <div class="stat-trend up" id="postTrend"><i class="fas fa-arrow-up"></i> +8% <span>this month</span></div>
         </div>
-        <div class="stat-card" style="--c:var(--amber)">
-          <div class="stat-top"><div class="stat-icon" style="background:#fef3c7;color:var(--amber)"><i class="fas fa-bullhorn"></i></div><span class="stat-trend up">Active</span></div>
-          <div class="stat-num" id="dashNotices">0</div><div class="stat-lbl">Notices</div>
+        <div class="stat-card c-amber">
+          <div class="stat-icon c-amber"><i class="fas fa-bullhorn"></i></div>
+          <div class="stat-val" id="dashNotices">0</div>
+          <div class="stat-label">Active Notices</div>
+          <div class="stat-trend" style="color:var(--text3)"><i class="fas fa-clock"></i> <span>last 7 days</span></div>
         </div>
-        <div class="stat-card" style="--c:var(--blue)">
-          <div class="stat-top"><div class="stat-icon" style="background:#dbeafe;color:var(--blue)"><i class="fas fa-comments"></i></div><span class="stat-trend up">Live</span></div>
-          <div class="stat-num" id="dashShouts">0</div><div class="stat-lbl">Shoutbox Messages</div>
+        <div class="stat-card c-pink">
+          <div class="stat-icon c-pink"><i class="fas fa-comments"></i></div>
+          <div class="stat-val" id="dashShouts">0</div>
+          <div class="stat-label">Shoutbox Messages</div>
+          <div class="stat-trend" style="color:var(--cyan)"><i class="fas fa-circle" style="font-size:8px"></i> <span>Live</span></div>
         </div>
       </div>
-      <div class="grid2">
+      <div class="grid-2">
         <div class="card">
-          <div class="card-header"><span class="card-title">Monthly Activity</span></div>
-          <div class="card-body">
-            <div class="chart-wrap"><div class="chart-bar" id="chartBars"></div></div>
+          <div class="card-header">
+            <div><div class="card-title">Monthly Activity</div><div class="card-subtitle">Posts &amp; users over 12 months</div></div>
+            <select class="filter-select" id="chartFilter" onchange="renderDashChart()">
+              <option value="posts">Posts</option>
+              <option value="users">Users</option>
+            </select>
           </div>
+          <div class="chart-wrap"><canvas id="activityChart"></canvas></div>
         </div>
         <div class="card">
-          <div class="card-header"><span class="card-title">Recent Activity</span></div>
-          <div class="card-body" id="activityFeed"><p style="color:var(--text-light);font-size:.85rem">Loading...</p></div>
+          <div class="card-header"><div class="card-title">Recent Activity</div></div>
+          <div id="activityFeed"><div class="empty-state"><i class="fas fa-stream"></i><h3>No activity yet</h3><p>Actions will appear here</p></div></div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Latest Users</span><button class="btn btn-outline" onclick="showPage('users',null)" style="font-size:.8rem;padding:.4rem .9rem">View All</button></div>
-        <div class="card-body" style="padding:0"><table class="table" id="dashUserTable"><tr><th>Name</th><th>Email</th><th>Username</th><th>Status</th></tr></table></div>
-      </div>
-    </div>
-
-    <!-- USERS PAGE -->
-    <div class="page" id="page-users">
-      <div class="card">
+      <div class="card" style="margin-top:16px">
         <div class="card-header">
-          <span class="card-title">All Users</span>
-          <button class="btn btn-primary" onclick="showAddUserModal()"><i class="fas fa-plus"></i> Add User</button>
+          <div class="card-title">Latest Users</div>
+          <button class="btn btn-outline btn-sm" onclick="showPage('users',null)">View All</button>
         </div>
-        <div class="card-body" style="padding:0">
-          <table class="table" id="usersTable">
-            <thead><tr><th>#</th><th>Full Name</th><th>Username</th><th>Email</th><th>Phone</th><th>Role</th><th>Actions</th></tr></thead>
-            <tbody id="usersTbody"><tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-light)">Loading...</td></tr></tbody>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th></tr></thead>
+            <tbody id="dashUserTable"><tr><td colspan="5" style="text-align:center;color:var(--text3);padding:32px">No users yet</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- NOTICE BOARD PAGE -->
-    <div class="page" id="page-noticeboard">
-      <div class="notice-ticker"><span class="ticker-label">LIVE</span><div class="ticker-text" id="tickerText">Loading notices...</div></div>
-      <div class="grid2">
-        <div>
-          <div class="card">
-            <div class="card-header"><span class="card-title">Post a Notice</span></div>
-            <div class="card-body">
-              <div class="form-group"><label class="form-label">Title</label><input type="text" class="form-input" id="noticeTitle" placeholder="Notice title"></div>
-              <div class="form-group"><label class="form-label">Message</label><textarea class="form-input" id="noticeMsg" placeholder="Notice content..."></textarea></div>
-              <div class="form-group"><label class="form-label">Priority</label>
-                <select class="form-input" id="noticePriority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="urgent">Urgent</option></select>
-              </div>
-              <button class="btn btn-primary" onclick="postNotice()" style="width:100%"><i class="fas fa-paper-plane"></i> Post Notice</button>
-            </div>
-          </div>
+    <!-- USERS PAGE -->
+    <div class="page" id="page-users">
+      <div class="toolbar">
+        <div class="toolbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Search users..." oninput="renderUsers(this.value)"></div>
+        <select class="filter-select" id="userRoleFilter" onchange="renderUsers()">
+          <option value="">All Roles</option>
+          <option value="admin">Admin</option>
+          <option value="moderator">Moderator</option>
+          <option value="user">User</option>
+        </select>
+        <select class="filter-select" id="userStatusFilter" onchange="renderUsers()">
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        <button class="btn btn-primary" onclick="openModal('addUserModal')"><i class="fas fa-plus"></i> Add User</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Full Name</th><th>Username</th><th>Email</th><th>Phone</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+            <tbody id="usersTbody"></tbody>
+          </table>
         </div>
-        <div id="noticeList"><p style="color:var(--text-light)">Loading notices...</p></div>
+        <div class="pagination">
+          <div class="pagination-info" id="usersPagInfo">Showing 0 of 0 users</div>
+          <div class="pagination-btns" id="usersPagBtns"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTICEBOARD PAGE -->
+    <div class="page" id="page-noticeboard">
+      <div class="ticker-wrap" id="tickerWrap">
+        <span class="ticker-label"><i class="fas fa-bullhorn"></i> LIVE</span>
+        <span class="ticker-text" id="tickerText">No active notices at this time.</span>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fas fa-plus-circle" style="color:var(--primary)"></i> Post Notice</div></div>
+          <div class="form-group"><label class="form-label">Title *</label><input type="text" class="form-input" id="noticeTitle" placeholder="Notice title..."></div>
+          <div class="form-group"><label class="form-label">Message *</label><textarea class="form-input" id="noticeMsg" placeholder="Write your notice here..."></textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Priority</label>
+              <select class="form-input" id="noticePriority">
+                <option value="info">Info</option>
+                <option value="warning">Warning</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Expires (optional)</label><input type="date" class="form-input" id="noticeExpiry"></div>
+          </div>
+          <button class="btn btn-primary" onclick="addNotice()" style="width:100%"><i class="fas fa-paper-plane"></i> Post Notice</button>
+        </div>
+        <div>
+          <div class="card-header" style="padding:0;margin-bottom:12px">
+            <div class="card-title">Active Notices (<span id="noticeListCount">0</span>)</div>
+            <div class="toolbar-search" style="width:200px"><i class="fas fa-search"></i><input type="text" placeholder="Search..." oninput="renderNotices(this.value)"></div>
+          </div>
+          <div id="noticeList"></div>
+        </div>
       </div>
     </div>
 
     <!-- POSTS PAGE -->
     <div class="page" id="page-posts">
-      <div class="grid2">
-        <div class="card">
-          <div class="card-header"><span class="card-title">Create Post</span></div>
-          <div class="card-body">
-            <div class="form-group"><label class="form-label">Title</label><input type="text" class="form-input" id="postTitle" placeholder="Post title"></div>
-            <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="postDesc" placeholder="Write something..."></textarea></div>
-            <div class="form-group"><label class="form-label">Author</label><input type="text" class="form-input" id="postAuthor" placeholder="Your name"></div>
-            <button class="btn btn-primary" onclick="createPost()" style="width:100%"><i class="fas fa-plus"></i> Create Post</button>
-          </div>
+      <div class="toolbar">
+        <div class="toolbar-search"><i class="fas fa-search"></i><input type="text" placeholder="Search posts..." oninput="renderPosts(this.value)"></div>
+        <select class="filter-select" id="postStatusFilter" onchange="renderPosts()">
+          <option value="">All Status</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+        </select>
+        <button class="btn btn-primary" onclick="openModal('addPostModal')"><i class="fas fa-plus"></i> New Post</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Title</th><th>Author</th><th>Status</th><th>Category</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="postsTbody"></tbody>
+          </table>
         </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">All Posts</span></div>
-          <div class="card-body" id="postsList"><p style="color:var(--text-light)">Loading posts...</p></div>
+        <div class="pagination">
+          <div class="pagination-info" id="postsPagInfo">Showing 0 of 0 posts</div>
+          <div class="pagination-btns" id="postsPagBtns"></div>
         </div>
       </div>
     </div>
 
     <!-- SHOUTBOX PAGE -->
     <div class="page" id="page-shoutbox">
-      <div class="card" style="max-width:680px;margin:0 auto">
-        <div class="card-header"><span class="card-title"><i class="fas fa-comments" style="color:var(--accent)"></i> Shoutbox</span><button class="btn btn-outline" style="font-size:.78rem;padding:.35rem .8rem" onclick="loadShouts()"><i class="fas fa-sync"></i></button></div>
-        <div class="card-body">
-          <div class="shout-list" id="shoutList"><p style="color:var(--text-light);font-size:.85rem">Loading messages...</p></div>
-          <hr style="border:none;border-top:1px solid var(--border);margin-bottom:1rem">
-          <div class="form-group"><label class="form-label">Your Name</label><input type="text" class="form-input" id="shoutName" placeholder="Nickname"></div>
-          <div class="form-group"><label class="form-label">Message</label><textarea class="form-input" id="shoutMsg" placeholder="Write a message... (max 240 chars)" maxlength="240" rows="3"></textarea></div>
-          <button class="btn btn-primary" onclick="sendShout()" style="width:100%"><i class="fas fa-paper-plane"></i> Shout!</button>
+      <div class="grid-2">
+        <div class="card" style="grid-column:1/-1">
+          <div class="card-header">
+            <div><div class="card-title"><i class="fas fa-comments" style="color:var(--cyan)"></i> Live Shoutbox</div><div class="card-subtitle">Community chat board</div></div>
+            <button class="btn btn-danger btn-sm" onclick="clearShouts()"><i class="fas fa-trash"></i> Clear All</button>
+          </div>
+          <div class="shout-list" id="shoutList"></div>
+          <div class="shout-input-row">
+            <textarea class="shout-input" id="shoutInput" placeholder="Type your message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendShout()}"></textarea>
+            <button class="btn btn-primary" onclick="sendShout()"><i class="fas fa-paper-plane"></i> Send</button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- PROFILE PAGE -->
     <div class="page" id="page-profile">
-      <div class="grid2">
-        <div class="card">
-          <div class="card-header"><span class="card-title">My Profile</span></div>
-          <div class="card-body" style="text-align:center">
-            <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:2rem;color:#fff;font-weight:700" id="profileAvatar">A</div>
-            <h2 id="profileName" style="font-size:1.1rem;margin-bottom:.3rem">Admin</h2>
-            <p id="profileEmail" style="color:var(--text-light);font-size:.85rem;margin-bottom:.3rem">—</p>
-            <p id="profileRole" style="margin-bottom:1.2rem"><span class="badge badge-purple">Administrator</span></p>
-            <button class="btn btn-outline" onclick="doLogout()" style="width:100%"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      <div class="profile-hero">
+        <div class="profile-hero-content">
+          <div class="profile-big-av" id="profileBigAv">A</div>
+          <div class="profile-hero-info">
+            <h2 id="profileHeroName">Administrator</h2>
+            <p id="profileHeroEmail">admin@adminzone.com</p>
+            <div style="margin-top:8px"><span class="badge badge-purple" id="profileHeroRole">Admin</span></div>
           </div>
         </div>
+      </div>
+      <div class="grid-2">
         <div class="card">
-          <div class="card-header"><span class="card-title">My Posts</span></div>
-          <div class="card-body" id="profilePosts"><p style="color:var(--text-light)">Loading...</p></div>
+          <div class="card-header"><div class="card-title">Edit Profile</div></div>
+          <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" id="profileName"></div>
+          <div class="form-group"><label class="form-label">Username</label><input type="text" class="form-input" id="profileUsername"></div>
+          <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="profileEmail"></div>
+          <div class="form-group"><label class="form-label">Phone</label><input type="text" class="form-input" id="profilePhone"></div>
+          <div class="form-group"><label class="form-label">Bio</label><textarea class="form-input" id="profileBio" placeholder="Tell something about yourself..."></textarea></div>
+          <div class="form-actions"><button class="btn btn-primary" onclick="saveProfile()"><i class="fas fa-save"></i> Save Changes</button></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Change Password</div></div>
+          <div class="form-group"><label class="form-label">Current Password</label><input type="password" class="form-input" id="pwCurrent" placeholder="Your current password"></div>
+          <div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-input" id="pwNew" placeholder="Min. 6 characters"></div>
+          <div class="form-group"><label class="form-label">Confirm New Password</label><input type="password" class="form-input" id="pwConfirm" placeholder="Repeat new password"></div>
+          <div class="form-actions"><button class="btn btn-primary" onclick="changePassword()"><i class="fas fa-lock"></i> Update Password</button></div>
+          <div class="card" style="margin-top:20px;background:var(--card2)">
+            <div class="card-header"><div class="card-title">Account Stats</div></div>
+            <div style="display:flex;flex-direction:column;gap:8px" id="profileStats"></div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- SETTINGS PAGE -->
     <div class="page" id="page-settings">
-      <div class="card" style="max-width:560px">
-        <div class="card-header"><span class="card-title">System Settings</span></div>
-        <div class="card-body">
-          <div class="form-group"><label class="form-label">Site Name</label><input type="text" class="form-input" value="AdminZone" id="siteName"></div>
-          <div class="form-group"><label class="form-label">Admin Email</label><input type="email" class="form-input" value="admin@adminzone.com" id="adminEmail"></div>
-          <div class="form-group"><label class="form-label">Allow Public Registration</label>
-            <select class="form-input" id="allowReg"><option>Yes</option><option>No</option></select>
+      <div class="grid-2">
+        <div class="card">
+          <div class="settings-section">
+            <div class="settings-section-title"><i class="fas fa-palette" style="color:var(--primary)"></i> Appearance</div>
+            <div class="settings-row">
+              <div><div class="settings-row-label">Dark Mode</div><div class="settings-row-desc">Switch between dark and light theme</div></div>
+              <label class="toggle"><input type="checkbox" id="settingDarkMode" onchange="toggleTheme()" checked><span class="toggle-slider"></span></label>
+            </div>
+            <div class="settings-row">
+              <div><div class="settings-row-label">Compact Sidebar</div><div class="settings-row-desc">Reduce sidebar padding and text size</div></div>
+              <label class="toggle"><input type="checkbox" id="settingCompact" onchange="toggleCompact()"><span class="toggle-slider"></span></label>
+            </div>
           </div>
-          <div class="form-group"><label class="form-label">Notice Board Max Items</label><input type="number" class="form-input" value="20" id="maxNotices"></div>
-          <button class="btn btn-primary" onclick="saveSettings()"><i class="fas fa-save"></i> Save Settings</button>
+          <div class="settings-section">
+            <div class="settings-section-title"><i class="fas fa-bell" style="color:var(--amber)"></i> Notifications</div>
+            <div class="settings-row">
+              <div><div class="settings-row-label">New User Alerts</div><div class="settings-row-desc">Notify when a new user registers</div></div>
+              <label class="toggle"><input type="checkbox" id="settingNewUser" checked><span class="toggle-slider"></span></label>
+            </div>
+            <div class="settings-row">
+              <div><div class="settings-row-label">Shoutbox Alerts</div><div class="settings-row-desc">Notify on new shoutbox messages</div></div>
+              <label class="toggle"><input type="checkbox" id="settingShout" checked><span class="toggle-slider"></span></label>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="settings-section">
+            <div class="settings-section-title"><i class="fas fa-database" style="color:var(--green)"></i> Data Management</div>
+            <div class="settings-row">
+              <div><div class="settings-row-label">Export Data</div><div class="settings-row-desc">Download all data as JSON</div></div>
+              <button class="btn btn-outline btn-sm" onclick="exportData()"><i class="fas fa-download"></i> Export</button>
+            </div>
+            <div class="settings-row">
+              <div><div class="settings-row-label">Reset Demo Data</div><div class="settings-row-desc">Reload default sample data</div></div>
+              <button class="btn btn-success btn-sm" onclick="resetDemo()"><i class="fas fa-refresh"></i> Reset</button>
+            </div>
+            <div class="settings-row">
+              <div><div class="settings-row-label">Clear All Data</div><div class="settings-row-desc">Permanently delete all stored data</div></div>
+              <button class="btn btn-danger btn-sm" onclick="clearAllData()"><i class="fas fa-trash"></i> Clear</button>
+            </div>
+          </div>
+          <div class="settings-section">
+            <div class="settings-section-title"><i class="fas fa-info-circle" style="color:var(--blue)"></i> About</div>
+            <div style="background:var(--card2);border-radius:var(--radius-sm);padding:16px;font-size:13px;line-height:2;color:var(--text2)">
+              <strong style="color:var(--text)">AdminZone v2.0</strong><br>
+              A premium admin dashboard built with pure HTML/CSS/JS<br>
+              Data stored locally in your browser (localStorage)<br>
+              <br><span style="color:var(--primary2)">github.com/Ansumansahoo/adminzone</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-  </div><!-- /content -->
-</div><!-- /main -->
-<!-- ADD USER MODAL -->
-<div id="addUserModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem">
-  <div style="background:#fff;border-radius:16px;padding:2rem;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
-    <h3 style="margin-bottom:1.2rem;font-size:1.1rem">Add New User</h3>
-    <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" id="newFname" placeholder="Full name"></div>
-    <div class="form-group"><label class="form-label">Username</label><input type="text" class="form-input" id="newUname" placeholder="@username"></div>
-    <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="newEmail" placeholder="user@example.com"></div>
-    <div class="form-group"><label class="form-label">Phone</label><input type="text" class="form-input" id="newPhone" placeholder="+91 XXXXX XXXXX"></div>
-    <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="newPass" placeholder="Min. 6 characters"></div>
-    <div class="form-group"><label class="form-label">Role</label><select class="form-input" id="newRole"><option value="user">User</option><option value="moderator">Moderator</option><option value="admin">Admin</option></select></div>
-    <div style="display:flex;gap:.75rem;margin-top:1rem">
-      <button class="btn btn-outline" onclick="document.getElementById('addUserModal').style.display='none'" style="flex:1">Cancel</button>
-      <button class="btn btn-primary" onclick="addUser()" style="flex:1"><i class="fas fa-check"></i> Add User</button>
+  </main>
+</div>
+</div>
+
+<!-- ─────── MODALS ─────── -->
+
+<!-- Add/Edit User Modal -->
+<div class="modal-overlay" id="addUserModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="addUserModalTitle">Add New User</div>
+      <button class="modal-close" onclick="closeModal('addUserModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <input type="hidden" id="editUserId">
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Full Name *</label><input type="text" class="form-input" id="uName" placeholder="John Doe"></div>
+      <div class="form-group"><label class="form-label">Username *</label><input type="text" class="form-input" id="uUsername" placeholder="johndoe"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Email *</label><input type="email" class="form-input" id="uEmail" placeholder="john@example.com"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Phone</label><input type="text" class="form-input" id="uPhone" placeholder="+91 9876543210"></div>
+      <div class="form-group"><label class="form-label">Password *</label><input type="password" class="form-input" id="uPassword" placeholder="Min. 6 characters"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Role</label>
+        <select class="form-input" id="uRole">
+          <option value="user">User</option>
+          <option value="moderator">Moderator</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select class="form-input" id="uStatus">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal('addUserModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUser()"><i class="fas fa-save"></i> <span id="saveUserBtnText">Add User</span></button>
     </div>
   </div>
 </div>
-<div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg">Done</span></div>
-<script>
-// ============ SUPABASE SETUP ============
-const SB_URL = 'https://xpziztrwufkqndzeguyj.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhweml6dHJ3dWZrcW5kemVndXlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzMDI5OTIsImV4cCI6MjA5Mzg3ODk5Mn0.-0230c8JwmK71uLAuYgvDyoQaT28Xbadtr0eVJPEoFM';
-const sb = supabase.createClient(SB_URL, SB_KEY);
 
-// ============ AUTH CHECK ============
-let currentAdmin = null;
-
-async function checkAuth(){
-  const stored = sessionStorage.getItem('az_admin');
-  if(stored){
-    currentAdmin = JSON.parse(stored);
-    showDashboard();
-    loadAll();
-    return;
-  }
-  showLoginScreen();
-}
-
-function showLoginScreen(){
-  document.body.innerHTML = `
-  <div class="login-wrap">
-    <div class="login-card">
-      <div class="login-logo"><div class="logo-icon">AZ</div><div class="logo-text">Admin<span>Zone</span></div></div>
-      <h2 class="login-title">Welcome Back</h2>
-      <p class="login-sub">Sign in to your AdminZone account</p>
-      <div class="form-group"><label class="form-label">Email or Username</label><input type="text" class="form-input" id="loginEmail" placeholder="admin@example.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
-      <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="loginPass" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"></div>
-      <button class="btn btn-primary" onclick="doLogin()" style="width:100%;padding:.9rem;font-size:1rem;margin-top:.5rem"><i class="fas fa-sign-in-alt"></i> Sign In</button>
-      <p style="text-align:center;margin-top:1.2rem;font-size:.82rem;color:var(--text-light)">Don't have an account? <a href="signup.html" style="color:var(--accent);font-weight:600">Sign up</a></p>
-      <div id="loginErr" style="display:none;background:#fee2e2;border-radius:8px;padding:.7rem 1rem;margin-top:1rem;color:var(--red);font-size:.85rem;text-align:center"></div>
-      <div style="background:var(--bg);border-radius:8px;padding:.7rem 1rem;margin-top:1rem;font-size:.78rem;color:var(--text-light);text-align:center">
-        <strong>Demo:</strong> admin@adminzone.com / admin123
+<!-- Add/Edit Post Modal -->
+<div class="modal-overlay" id="addPostModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="addPostModalTitle">New Post</div>
+      <button class="modal-close" onclick="closeModal('addPostModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <input type="hidden" id="editPostId">
+    <div class="form-group"><label class="form-label">Title *</label><input type="text" class="form-input" id="pTitle" placeholder="Post title..."></div>
+    <div class="form-group"><label class="form-label">Content *</label><textarea class="form-input" id="pContent" style="min-height:140px" placeholder="Write your post content here..."></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Category</label>
+        <select class="form-input" id="pCategory">
+          <option value="General">General</option>
+          <option value="Announcement">Announcement</option>
+          <option value="Update">Update</option>
+          <option value="Tutorial">Tutorial</option>
+          <option value="News">News</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select class="form-input" id="pStatus">
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+        </select>
       </div>
     </div>
-  </div>`;
+    <div class="form-group"><label class="form-label">Tags (comma separated)</label><input type="text" class="form-input" id="pTags" placeholder="e.g. admin, update, news"></div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal('addPostModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="savePost()"><i class="fas fa-save"></i> <span id="savePostBtnText">Publish Post</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- View Post Modal -->
+<div class="modal-overlay" id="viewPostModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="viewPostTitle">Post</div>
+      <button class="modal-close" onclick="closeModal('viewPostModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="viewPostBody"></div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <div class="modal-title">Confirm Action</div>
+      <button class="modal-close" onclick="closeModal('confirmModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <p style="color:var(--text2);margin-bottom:20px" id="confirmMsg">Are you sure?</p>
+    <div class="form-actions" style="padding-top:0;border-top:none">
+      <button class="btn btn-outline" onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn btn-danger" id="confirmYesBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-bg">
+    <div class="login-bg-blob"></div>
+    <div class="login-bg-blob"></div>
+  </div>
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-icon">AZ</div>
+      <div class="logo-text">Admin<span>Zone</span></div>
+    </div>
+    <div class="login-tabs">
+      <div class="login-tab active" onclick="switchLoginTab('signin')">Sign In</div>
+      <div class="login-tab" onclick="switchLoginTab('signup')">Sign Up</div>
+    </div>
+    <!-- Sign In -->
+    <div id="signinForm">
+      <div class="form-group"><label class="form-label">Email or Username</label><input type="text" class="form-input" id="loginEmail" placeholder="admin@adminzone.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="loginPassword" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+      <div class="login-demo"><strong>Demo Credentials:</strong><br>admin@adminzone.com / admin123</div>
+    </div>
+    <!-- Sign Up -->
+    <div id="signupForm" style="display:none">
+      <div class="form-row"><div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" id="regName" placeholder="Your name"></div><div class="form-group"><label class="form-label">Username</label><input type="text" class="form-input" id="regUsername" placeholder="username"></div></div>
+      <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="regEmail" placeholder="you@example.com"></div>
+      <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="regPassword" placeholder="Min. 6 characters"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px" onclick="doSignup()"><i class="fas fa-user-plus"></i> Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<script>
+// ================================================================
+// ADMINZONE PREMIUM — Full Application Script
+// ================================================================
+
+// ---- DATA STORE (localStorage) ----
+const DB = {
+  get: (k) => { try { return JSON.parse(localStorage.getItem('az_' + k)) || []; } catch(e) { return []; } },
+  set: (k, v) => localStorage.setItem('az_' + k, JSON.stringify(v)),
+  getObj: (k) => { try { return JSON.parse(localStorage.getItem('az_' + k)) || {}; } catch(e) { return {}; } },
+  setObj: (k, v) => localStorage.setItem('az_' + k, JSON.stringify(v))
+};
+
+// ---- AVATAR COLORS ----
+const COLORS = ['#6366f1','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ef4444','#3b82f6','#ec4899','#14b8a6','#f97316'];
+function getColor(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h << 5) - h + str.charCodeAt(i);
+  return COLORS[Math.abs(h) % COLORS.length];
+}
+function initials(name) {
+  const parts = (name || 'U').split(' ');
+  return (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
 }
 
-async function doLogin(){
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass = document.getElementById('loginPass').value.trim();
-  if(!email || !pass) return;
-  
-  // Check demo credentials
-  if((email === 'admin@adminzone.com' || email === 'admin') && pass === 'admin123'){
-    currentAdmin = {id:'demo-admin',fname:'Admin',uname:'admin',email:'admin@adminzone.com',role:'admin'};
-    sessionStorage.setItem('az_admin', JSON.stringify(currentAdmin));
-    location.reload();
+// ---- DEMO DATA ----
+function initDemoData() {
+  if (localStorage.getItem('az_initialized')) return;
+  const now = Date.now();
+  const users = [
+    { id: 'u1', fname:'Admin', lname:'Zone', email:'admin@adminzone.com', username:'adminzone', password:'admin123', role:'admin', status:'active', bio:'Platform administrator with full access rights.', joined: now - 30*864e5 },
+    { id: 'u2', fname:'Alice', lname:'Johnson', email:'alice@adminzone.com', username:'alice_j', password:'user123', role:'moderator', status:'active', bio:'Community moderator and content curator.', joined: now - 25*864e5 },
+    { id: 'u3', fname:'Bob', lname:'Martinez', email:'bob@adminzone.com', username:'bobm', password:'user123', role:'user', status:'active', bio:'Regular user and tech enthusiast.', joined: now - 20*864e5 },
+    { id: 'u4', fname:'Carol', lname:'Williams', email:'carol@adminzone.com', username:'carolw', password:'user123', role:'user', status:'inactive', bio:'Part-time blogger and writer.', joined: now - 15*864e5 },
+    { id: 'u5', fname:'David', lname:'Chen', email:'david@adminzone.com', username:'davidc', password:'user123', role:'moderator', status:'active', bio:'Data analyst and dashboard lover.', joined: now - 10*864e5 },
+    { id: 'u6', fname:'Emma', lname:'Davis', email:'emma@adminzone.com', username:'emmad', password:'user123', role:'user', status:'active', bio:'Designer and UI/UX specialist.', joined: now - 5*864e5 }
+  ];
+  const posts = [
+    { id: 'p1', title:'Welcome to AdminZone Premium!', content:'We are thrilled to launch the all-new AdminZone Premium dashboard. This release includes a fully redesigned UI, dark mode, real-time data, advanced filtering and much more. Explore all the new features today!', author:'u1', category:'Announcement', status:'published', pinned:true, likes:24, views:312, date: now - 5*864e5 },
+    { id: 'p2', title:'How to Use the Shoutbox', content:'The Shoutbox is a live community chat feature. Simply type your message and hit Send or press Ctrl+Enter. Admins can moderate messages and clear the board as needed. It supports multi-line messages.', author:'u2', category:'Tutorial', status:'published', pinned:false, likes:18, views:156, date: now - 3*864e5 },
+    { id: 'p3', title:'Platform Roadmap — Q2 2026', content:'Here is what we are planning: (1) Email notifications, (2) Rich text editor for posts, (3) File upload support, (4) Two-factor authentication. We welcome your feedback and suggestions.', author:'u1', category:'News', status:'published', pinned:false, likes:31, views:487, date: now - 2*864e5 },
+    { id: 'p4', title:'Community Guidelines Update', content:'We have updated our community guidelines to ensure a safe and welcoming environment. Key changes: (1) Zero tolerance for hate speech, (2) Spam posts will be removed, (3) All users must verify email.', author:'u5', category:'Announcement', status:'published', pinned:false, likes:12, views:98, date: now - 1*864e5 },
+    { id: 'p5', title:'Tips for New Members', content:'Welcome to all new members! Here are some tips to get started: (1) Complete your profile, (2) Introduce yourself in the Shoutbox, (3) Read the community guidelines, (4) Explore existing posts.', author:'u2', category:'General', status:'draft', pinned:false, likes:0, views:0, date: now }
+  ];
+  const notices = [
+    { id: 'n1', title:'System Maintenance — May 15', body:'The platform will undergo scheduled maintenance on May 15, 2026 from 2:00 AM to 4:00 AM UTC. Please save your work beforehand.', priority:'urgent', author:'u1', date: now - 2*864e5, expires: now + 5*864e5 },
+    { id: 'n2', title:'New Feature: Dark Mode Available', body:'We have rolled out the dark mode feature for all users. Toggle it from the topbar or visit Settings → Appearance.', priority:'normal', author:'u1', date: now - 4*864e5, expires: null },
+    { id: 'n3', title:'Welcome to All New Members!', body:'A warm welcome to everyone who joined this week. Please check our community guidelines and feel free to post in the Shoutbox.', priority:'important', author:'u2', date: now - 7*864e5, expires: null }
+  ];
+  const shouts = [
+    { id: 's1', userId:'u1', msg:'Welcome everyone to AdminZone Premium! Feel free to explore all the features. \uD83D\uDE80', date: now - 2*3600e3 },
+    { id: 's2', userId:'u2', msg:'Thanks! The new design looks absolutely stunning. Great work team!', date: now - 1.5*3600e3 },
+    { id: 's3', userId:'u3', msg:'Just logged in for the first time. The dashboard charts are really cool!', date: now - 3600e3 },
+    { id: 's4', userId:'u5', msg:'The dark mode is perfect for late-night work sessions. \uD83C\uDF19', date: now - 1800e3 },
+    { id: 's5', userId:'u6', msg:'Hello everyone! Excited to be here. The UI is top-notch!', date: now - 600e3 }
+  ];
+  const notifs = [
+    { id:'notif1', text:'New user Bob Martinez registered', time: now - 3600e3, read:false, icon:'fa-user-plus', color:'var(--success)' },
+    { id:'notif2', text:'Post "Welcome to AdminZone" got 24 likes', time: now - 7200e3, read:false, icon:'fa-heart', color:'var(--danger)' },
+    { id:'notif3', text:'Notice published: System Maintenance', time: now - 86400e3, read:false, icon:'fa-bullhorn', color:'var(--warning)' },
+    { id:'notif4', text:'Emma Davis joined the platform', time: now - 2*86400e3, read:true, icon:'fa-user', color:'var(--info)' }
+  ];
+  DB.set('users', users);
+  DB.set('posts', posts);
+  DB.set('notices', notices);
+  DB.set('shouts', shouts);
+  DB.set('notifications', notifs);
+  localStorage.setItem('az_initialized', '1');
+}
+
+// ---- STATE ----
+let currentUser = null;
+let currentPage = 'dashboard';
+let pendingConfirm = null;
+let usersSortField = 'name', usersSortDir = 1, usersRoleFilter = '', usersSearch = '';
+let postsFilter = 'all', postsSearch = '';
+let mainChart = null, roleChart = null;
+let sparkCharts = {};
+const ITEMS_PER_PAGE = 10;
+let usersPage = 1, postsPage = 1;
+let prefSettings = {};
+
+// ---- AUTH ----
+function handleLogin(e) {
+  e.preventDefault();
+  const emailVal = document.getElementById('login-email').value.trim();
+  const pwd = document.getElementById('login-password').value;
+  const users = DB.get('users');
+  const user = users.find(u => (u.email === emailVal || u.username === emailVal) && u.password === pwd);
+  const errEl = document.getElementById('login-error');
+  if (!user) {
+    errEl.textContent = 'Invalid email/username or password. Please try again.';
+    errEl.style.display = 'block';
+    document.getElementById('login-btn').classList.add('shake');
+    setTimeout(() => document.getElementById('login-btn').classList.remove('shake'), 500);
     return;
   }
+  errEl.style.display = 'none';
+  currentUser = user;
+  localStorage.setItem('az_session', JSON.stringify({ userId: user.id, time: Date.now() }));
+  startApp();
+}
+
+function handleLogout() {
+  currentUser = null;
+  localStorage.removeItem('az_session');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+  if (mainChart) { mainChart.destroy(); mainChart = null; }
+  if (roleChart) { roleChart.destroy(); roleChart = null; }
+  closeAllDropdowns();
+  toast('Signed out', 'You have been signed out successfully.', 'info');
+}
+
+function checkSession() {
+  const sess = localStorage.getItem('az_session');
+  if (!sess) return false;
+  const { userId } = JSON.parse(sess);
+  const user = DB.get('users').find(u => u.id === userId);
+  if (!user) return false;
+  currentUser = user;
+  return true;
+}
+
+function handleSignup(e) {
+  e.preventDefault();
+  const fname = document.getElementById('su-fname').value.trim();
+  const lname = document.getElementById('su-lname').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  const username = document.getElementById('su-username').value.trim();
+  const pwd = document.getElementById('su-password').value;
+  const confirm = document.getElementById('su-confirm').value;
+  const errEl = document.getElementById('signup-error');
+  if (pwd !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.style.display='block'; return; }
+  if (pwd.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.style.display='block'; return; }
+  const users = DB.get('users');
+  if (users.find(u => u.email === email)) { errEl.textContent = 'An account with this email already exists.'; errEl.style.display='block'; return; }
+  const newUser = {
+    id: 'u' + Date.now(),
+    fname, lname, email,
+    username: username || email.split('@')[0],
+    password: pwd, role: 'user', status: 'active',
+    bio: '', joined: Date.now()
+  };
+  users.push(newUser);
+  DB.set('users', users);
+  errEl.style.display = 'none';
+  closeSignupModal();
+  toast('Account created', 'You can now sign in with your credentials.', 'success');
+  document.getElementById('login-email').value = email;
+  addNotification('New user registered: ' + fname + ' ' + lname, 'fa-user-plus', 'var(--success)');
+}
+
+function openSignupModal() { openModal('signup-modal-overlay'); }
+function closeSignupModal() { closeModal('signup-modal-overlay'); document.getElementById('signup-error').style.display='none'; document.getElementById('signup-form').reset(); }
+
+function togglePwd(id, btn) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.querySelector('i').className = 'fa fa-eye' + (inp.type === 'text' ? '-slash' : '');
+}
+
+// ---- APP START ----
+function startApp() {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').style.display = 'flex';
+  updateUserUI();
+  navigateTo('dashboard');
+  updateBadges();
+  loadNotifications();
+}
+
+function updateUserUI() {
+  if (!currentUser) return;
+  const name = currentUser.fname + ' ' + currentUser.lname;
+  const role = currentUser.role === 'admin' ? 'Administrator' : currentUser.role === 'moderator' ? 'Moderator' : 'User';
+  const av = initials(name);
+  const col = getColor(currentUser.id);
+  ['sidebar-avatar','topbar-avatar'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = av; el.style.background = 'linear-gradient(135deg, '+col+', '+col+'cc)'; }
+  });
+  const sn = document.getElementById('sidebar-name'); if (sn) sn.textContent = name;
+  const sr = document.getElementById('sidebar-role'); if (sr) sr.textContent = role;
+  const tn = document.getElementById('topbar-name'); if (tn) tn.textContent = currentUser.fname;
+  const tr = document.getElementById('topbar-role'); if (tr) tr.textContent = role;
+  // Admin-only UI
+  const adminOnlyEls = document.querySelectorAll('[data-admin]');
+  adminOnlyEls.forEach(el => el.style.display = currentUser.role === 'admin' ? '' : 'none');
+  const clearBtn = document.getElementById('clear-shouts-btn');
+  if (clearBtn) clearBtn.style.display = currentUser.role === 'admin' ? 'flex' : 'none';
+}
+
+function updateBadges() {
+  const users = DB.get('users');
+  const posts = DB.get('posts');
+  const shouts = DB.get('shouts');
+  const nb = document.getElementById('nav-users-badge'); if (nb) nb.textContent = users.length;
+  const pb = document.getElementById('nav-posts-badge'); if (pb) pb.textContent = posts.length;
+  const sb = document.getElementById('nav-shouts-badge'); if (sb) sb.textContent = shouts.length;
+}
+
+// ---- NAVIGATION ----
+function navigateTo(page) {
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-' + page);
+  if (pg) pg.classList.add('active');
+  const nav = document.querySelector('.nav-item[data-page="' + page + '"]');
+  if (nav) nav.classList.add('active');
+  const titles = {
+    dashboard: ['Dashboard', 'Welcome back, ' + (currentUser ? currentUser.fname : 'User') + '! Here's what's happening.'],
+    users: ['Users', 'Manage all registered users and permissions'],
+    posts: ['Posts', 'Browse and manage all community posts'],
+    notices: ['Notice Board', 'Publish and manage announcements'],
+    shoutbox: ['Shoutbox', 'Live community chat and messages'],
+    profile: ['My Profile', 'View and edit your account information'],
+    settings: ['Settings', 'Configure your preferences and account'],
+    notifications: ['Notifications', 'All your recent notifications']
+  };
+  const [title, subtitle] = titles[page] || [page, ''];
+  const ptEl = document.getElementById('page-title'); if (ptEl) ptEl.textContent = title;
+  const psEl = document.getElementById('page-subtitle'); if (psEl) psEl.textContent = subtitle;
+  closeAllDropdowns();
+  closeMobileSidebar();
+  if (page === 'dashboard') renderDashboard();
+  else if (page === 'users') renderUsersPage();
+  else if (page === 'posts') renderPostsPage();
+  else if (page === 'notices') renderNoticesPage();
+  else if (page === 'shoutbox') renderShoutbox();
+  else if (page === 'profile') renderProfilePage();
+  window.scrollTo(0, 0);
+}
+
+// ---- DASHBOARD ----
+function renderDashboard() {
+  const users = DB.get('users');
+  const posts = DB.get('posts');
+  const notices = DB.get('notices');
+  const shouts = DB.get('shouts');
   
-  try{
-    const {data,error} = await sb.from('az_users').select('*').eq('email',email).eq('pass',pass).single();
-    if(data && data.role==='admin'){
-      currentAdmin = data;
-      sessionStorage.setItem('az_admin', JSON.stringify(currentAdmin));
-      location.reload();
-    } else {
-      showLoginErr('Invalid credentials. Use demo: admin@adminzone.com / admin123');
-    }
-  }catch(e){
-    showLoginErr('Invalid credentials. Use demo: admin@adminzone.com / admin123');
+  // Stats
+  const statU = document.getElementById('stat-users'); if(statU) statU.textContent = users.length;
+  const statP = document.getElementById('stat-posts'); if(statP) statP.textContent = posts.length;
+  const statN = document.getElementById('stat-notices'); if(statN) statN.textContent = notices.length;
+  const statS = document.getElementById('stat-shouts'); if(statS) statS.textContent = shouts.length;
+
+  // Sparklines
+  setTimeout(() => {
+    renderSparkline('spark-users', [2,3,3,4,4,5,users.length], '#6366f1');
+    renderSparkline('spark-posts', [1,1,2,3,4,4,posts.length], '#06b6d4');
+    renderSparkline('spark-notices', [0,1,1,2,2,3,notices.length], '#10b981');
+    renderSparkline('spark-shouts', [1,2,3,3,4,5,shouts.length], '#f59e0b');
+    renderMainChart();
+    renderRoleChart(users);
+  }, 100);
+
+  // Activity feed
+  const allActivity = [
+    ...posts.map(p => ({ type:'post', text:'Post published: <strong>' + escHtml(p.title) + '</strong>', time:p.date, icon:'fa-file-lines', color:'var(--accent)' })),
+    ...users.map(u => ({ type:'user', text:'User joined: <strong>' + escHtml(u.fname+' '+u.lname) + '</strong>', time:u.joined, icon:'fa-user-plus', color:'var(--success)' })),
+    ...notices.map(n => ({ type:'notice', text:'Notice posted: <strong>' + escHtml(n.title) + '</strong>', time:n.date, icon:'fa-bullhorn', color:'var(--warning)' }))
+  ].sort((a,b) => b.time - a.time).slice(0,6);
+  
+  const feed = document.getElementById('activity-feed');
+  if (feed) {
+    if (!allActivity.length) { feed.innerHTML = '<div class="empty-state"><div class="empty-icon"><i class="fa fa-clock-rotate-left"></i></div><div class="empty-msg">No recent activity</div></div>'; return; }
+    feed.innerHTML = allActivity.map(a => `
+      <div class="activity-item">
+        <div class="activity-icon" style="background:${a.color}22;color:${a.color}">
+          <i class="fa ${a.icon}"></i>
+        </div>
+        <div class="activity-content">
+          <div class="activity-text">${a.text}</div>
+          <div class="activity-time">${relTime(a.time)}</div>
+        </div>
+      </div>`).join('');
   }
-}
 
-function showLoginErr(msg){
-  const el = document.getElementById('loginErr');
-  if(el){el.textContent=msg;el.style.display='block';}
-}
-
-function doLogout(){
-  sessionStorage.removeItem('az_admin');
-  currentAdmin = null;
-  location.reload();
-}
-
-function showDashboard(){
-  if(currentAdmin){
-    document.getElementById('sidebarName').textContent = currentAdmin.fname || currentAdmin.uname || 'Admin';
-    document.getElementById('sidebarAvatar').textContent = (currentAdmin.fname||'A')[0].toUpperCase();
-    document.getElementById('profileAvatar').textContent = (currentAdmin.fname||'A')[0].toUpperCase();
-    document.getElementById('profileName').textContent = currentAdmin.fname || currentAdmin.uname;
-    document.getElementById('profileEmail').textContent = currentAdmin.email || '';
+  // Latest users
+  const lu = document.getElementById('latest-users');
+  if (lu) {
+    const recent = [...users].sort((a,b) => b.joined-a.joined).slice(0,5);
+    if (!recent.length) { lu.innerHTML = '<div class="empty-state"><div class="empty-msg">No users yet</div></div>'; }
+    else lu.innerHTML = recent.map(u => `
+      <div class="activity-item">
+        <div class="avatar" style="background:${getColor(u.id)}">${initials(u.fname+' '+u.lname)}</div>
+        <div class="activity-content">
+          <div class="activity-text"><strong>${escHtml(u.fname+' '+u.lname)}</strong> 
+            <span class="badge-wrap badge-${u.role === 'admin' ? 'primary' : u.role === 'moderator' ? 'warning' : 'neutral'}" style="font-size:10px;padding:2px 7px">${u.role}</span></div>
+          <div class="activity-time">${escHtml(u.email)} &bull; ${relTime(u.joined)}</div>
+        </div>
+      </div>`).join('');
   }
-}
 
-// ============ NAVIGATION ============
-function showPage(name, btn){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const page = document.getElementById('page-'+name);
-  if(page) page.classList.add('active');
-  if(btn) btn.classList.add('active');
-  const titles = {dashboard:'Dashboard',users:'User Management',noticeboard:'Notice Board',posts:'Posts',shoutbox:'Shoutbox',profile:'My Profile',settings:'Settings'};
-  document.getElementById('pageTitle').textContent = titles[name] || name;
-  // Load page data
-  if(name==='users') loadUsers();
-  if(name==='noticeboard') loadNotices();
-  if(name==='posts') loadPosts();
-  if(name==='shoutbox') loadShouts();
-  if(name==='profile') loadProfile();
-}
-
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-}
-
-// ============ LOAD ALL ============
-async function loadAll(){
-  loadDashboardStats();
-  loadActivityFeed();
-  loadDashboardUsers();
-  buildChart();
-}
-
-// ============ DASHBOARD STATS ============
-async function loadDashboardStats(){
-  try{
-    const [users,posts,notices,shouts] = await Promise.all([
-      sb.from('az_users').select('id',{count:'exact',head:true}),
-      sb.from('az_posts').select('id',{count:'exact',head:true}),
-      sb.from('az_notices').select('id',{count:'exact',head:true}),
-      sb.from('az_shouts').select('id',{count:'exact',head:true})
-    ]);
-    const uc = users.count||0, pc = posts.count||0, nc = notices.count||0, sc = shouts.count||0;
-    document.getElementById('dashUsers').textContent = uc;
-    document.getElementById('dashPosts').textContent = pc;
-    document.getElementById('dashNotices').textContent = nc;
-    document.getElementById('dashShouts').textContent = sc;
-    document.getElementById('userCount').textContent = uc;
-    document.getElementById('noticeCount').textContent = nc;
-  }catch(e){ console.log('stats error:',e); }
-}
-
-async function loadDashboardUsers(){
-  try{
-    const {data} = await sb.from('az_users').select('*').limit(5).order('id',{ascending:false});
-    const tbody = document.getElementById('dashUserTable');
-    if(!data||!data.length){tbody.innerHTML='<tr><th>Name</th><th>Email</th><th>Username</th><th>Status</th></tr><tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--text-light)">No users yet</td></tr>';return;}
-    tbody.innerHTML='<tr><th>Name</th><th>Email</th><th>Username</th><th>Status</th></tr>'+data.map(u=>`<tr><td>${u.fname||'—'}</td><td>${u.email||'—'}</td><td>@${u.uname||'—'}</td><td><span class="badge badge-green">Active</span></td></tr>`).join('');
-  }catch(e){}
-}
-
-async function loadActivityFeed(){
-  const feed = document.getElementById('activityFeed');
-  try{
-    const [posts,shouts,notices] = await Promise.all([
-      sb.from('az_posts').select('title,author,created_at').limit(3).order('created_at',{ascending:false}),
-      sb.from('az_shouts').select('name,created_at').limit(3).order('created_at',{ascending:false}),
-      sb.from('az_notices').select('title,created_at').limit(2).order('created_at',{ascending:false})
-    ]);
-    const items = [];
-    (posts.data||[]).forEach(p=>items.push({icon:'fa-newspaper',color:'#ede9fe',ic:'var(--accent)',text:`<strong>${p.author||'Someone'}</strong> posted "<em>${p.title||'Untitled'}</em>"</em>`,time:p.created_at}));
-    (shouts.data||[]).forEach(s=>items.push({icon:'fa-comment',color:'#dbeafe',ic:'var(--blue)',text:`<strong>${s.name||'Anonymous'}</strong> sent a shoutbox message`,time:s.created_at}));
-    (notices.data||[]).forEach(n=>items.push({icon:'fa-bullhorn',color:'#fef3c7',ic:'var(--amber)',text:`New notice posted: "<em>${n.title||'Untitled'}</em>"`,time:n.created_at}));
-    items.sort((a,b)=>new Date(b.time)-new Date(a.time));
-    if(!items.length){feed.innerHTML='<p style="color:var(--text-light);font-size:.85rem">No activity yet.</p>';return;}
-    feed.innerHTML = items.slice(0,6).map(i=>`<div class="activity-item"><div class="activity-icon" style="background:${i.color};color:${i.ic}"><i class="fas ${i.icon}"></i></div><div><div class="activity-text">${i.text}</div><div class="activity-time">${timeAgo(i.time)}</div></div></div>`).join('');
-  }catch(e){feed.innerHTML='<p style="color:var(--text-light);font-size:.85rem">Could not load activity.</p>';}
-}
-
-function buildChart(){
-  const bars = document.getElementById('chartBars');
-  if(!bars) return;
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const heights = [30,45,60,40,70,85,65,90,75,55,80,95];
-  bars.innerHTML = heights.map((h,i)=>`<div class="bar" style="height:${h}%"><span class="bar-label">${months[i]}</span></div>`).join('');
-}
-
-// ============ USERS ============
-async function loadUsers(){
-  const tbody = document.getElementById('usersTbody');
-  try{
-    const {data,error} = await sb.from('az_users').select('*').order('id',{ascending:false});
-    if(!data||!data.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-light)">No users found. Click "Add User" to create one.</td></tr>';return;}
-    tbody.innerHTML = data.map((u,i)=>`
-      <tr>
-        <td>${i+1}</td>
-        <td>${u.fname||'—'}</td>
-        <td>@${u.uname||'—'}</td>
-        <td>${u.email||'—'}</td>
-        <td>${u.phone||'—'}</td>
-        <td><span class="badge badge-${u.role==='admin'?'purple':u.role==='moderator'?'blue':'green'}">${u.role||'user'}</span></td>
-        <td><button class="btn btn-danger" style="padding:.3rem .7rem;font-size:.75rem" onclick="deleteUser('${u.id}')"><i class="fas fa-trash"></i></button></td>
-      </tr>`).join('');
-    document.getElementById('dashUsers').textContent = data.length;
-    document.getElementById('userCount').textContent = data.length;
-  }catch(e){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-light)">Error loading users.</td></tr>';}
-}
-
-function showAddUserModal(){
-  document.getElementById('addUserModal').style.display='flex';
-}
-
-async function addUser(){
-  const fname=document.getElementById('newFname').value.trim();
-  const uname=document.getElementById('newUname').value.trim();
-  const email=document.getElementById('newEmail').value.trim();
-  const phone=document.getElementById('newPhone').value.trim();
-  const pass=document.getElementById('newPass').value.trim();
-  const role=document.getElementById('newRole').value;
-  if(!fname||!email||!pass){showToast('Please fill all required fields','error');return;}
-  try{
-    const {error} = await sb.from('az_users').insert({fname,uname,email,phone,pass,role,image:'',created_at:new Date().toISOString()});
-    if(error) throw error;
-    document.getElementById('addUserModal').style.display='none';
-    ['newFname','newUname','newEmail','newPhone','newPass'].forEach(id=>document.getElementById(id).value='');
-    showToast('User added successfully!');
-    loadUsers();
-  }catch(e){showToast('Error: '+e.message,'error');}
-}
-
-async function deleteUser(id){
-  if(!confirm('Delete this user?')) return;
-  try{
-    await sb.from('az_users').delete().eq('id',id);
-    showToast('User deleted');
-    loadUsers();
-  }catch(e){showToast('Error deleting user','error');}
-}
-
-// ============ NOTICE BOARD ============
-async function loadNotices(){
-  const list = document.getElementById('noticeList');
-  const ticker = document.getElementById('tickerText');
-  try{
-    const {data} = await sb.from('az_notices').select('*').order('created_at',{ascending:false}).limit(20);
-    if(!data||!data.length){list.innerHTML='<p style="color:var(--text-light)">No notices yet.</p>';ticker.textContent='No active notices';return;}
-    ticker.textContent = data.map(n=>n.title).join(' • ');
-    const priColor = {low:'#10b981',medium:'#3b82f6',high:'#f59e0b',urgent:'#ef4444'};
-    list.innerHTML = data.map(n=>`
+  // Dash notices
+  const dn = document.getElementById('dash-notices');
+  if (dn) {
+    const activeNotices = notices.slice(0,3);
+    if (!activeNotices.length) { dn.innerHTML = '<div class="empty-state"><div class="empty-msg">No notices yet</div></div>'; }
+    else dn.innerHTML = activeNotices.map(n => `
       <div class="notice-item">
-        <div class="notice-pri" style="background:${priColor[n.priority]||'#6366f1'}"></div>
-        <div class="notice-content" style="flex:1">
-          <h4>${n.title||'Untitled'}</h4>
-          <p>${n.message||''}</p>
-          <div class="notice-meta"><span><i class="fas fa-clock"></i> ${timeAgo(n.created_at)}</span><span class="badge badge-${n.priority==='urgent'?'red':n.priority==='high'?'amber':n.priority==='medium'?'blue':'green'}">${n.priority||'low'}</span></div>
+        <div class="notice-item-header">
+          <div class="notice-title">${escHtml(n.title)}</div>
+          <span class="badge-wrap badge-${n.priority==='urgent'?'danger':n.priority==='important'?'warning':'info'}">${n.priority}</span>
         </div>
-        <button class="btn btn-danger" style="padding:.3rem .7rem;font-size:.75rem;align-self:flex-start" onclick="deleteNotice('${n.id}')"><i class="fas fa-trash"></i></button>
+        <div class="notice-body">${escHtml(n.body)}</div>
+        <div class="notice-meta"><i class="fa fa-clock"></i> ${relTime(n.date)}</div>
       </div>`).join('');
-    document.getElementById('noticeCount').textContent = data.length;
-    document.getElementById('dashNotices').textContent = data.length;
-  }catch(e){list.innerHTML='<p style="color:var(--text-light)">Error loading notices.</p>';}
+  }
 }
 
-async function postNotice(){
-  const title = document.getElementById('noticeTitle').value.trim();
-  const message = document.getElementById('noticeMsg').value.trim();
-  const priority = document.getElementById('noticePriority').value;
-  if(!title||!message){showToast('Title and message required','error');return;}
-  try{
-    const {error} = await sb.from('az_notices').insert({title,message,priority,created_by:currentAdmin?.id||'admin',created_at:new Date().toISOString()});
-    if(error) throw error;
-    document.getElementById('noticeTitle').value='';
-    document.getElementById('noticeMsg').value='';
-    showToast('Notice posted!');
-    loadNotices();
-  }catch(e){showToast('Error: '+e.message,'error');}
+function renderSparkline(id, data, color) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  if (sparkCharts[id]) { sparkCharts[id].destroy(); }
+  sparkCharts[id] = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: data.map((_,i)=>i),
+      datasets: [{ data, borderColor: color, borderWidth: 2, pointRadius: 0, fill: true,
+        backgroundColor: color+'22', tension: 0.4 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{enabled:false}},
+      scales:{x:{display:false},y:{display:false}} }
+  });
 }
 
-async function deleteNotice(id){
-  if(!confirm('Delete this notice?')) return;
-  await sb.from('az_notices').delete().eq('id',id);
-  showToast('Notice deleted');
-  loadNotices();
+function renderMainChart() {
+  const ctx = document.getElementById('main-chart');
+  if (!ctx) return;
+  if (mainChart) { mainChart.destroy(); }
+  const months = ['Nov','Dec','Jan','Feb','Mar','Apr','May'];
+  mainChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: [
+        { label:'Users', data:[2,3,4,5,5,6,DB.get('users').length], borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,0.1)',
+          borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#6366f1', tension:0.4, fill:true },
+        { label:'Posts', data:[1,2,2,3,4,4,DB.get('posts').length], borderColor:'#06b6d4', backgroundColor:'rgba(6,182,212,0.08)',
+          borderWidth:2.5, pointRadius:4, pointBackgroundColor:'#06b6d4', tension:0.4, fill:true },
+        { label:'Notices', data:[0,1,1,2,2,3,DB.get('notices').length], borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.08)',
+          borderWidth:2, pointRadius:4, pointBackgroundColor:'#10b981', tension:0.4, fill:true }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'rgba(15,20,40,0.9)', padding:12, cornerRadius:8, titleColor:'#e2e8f0', bodyColor:'#94a3b8' } },
+      scales: {
+        x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#64748b',font:{size:11}} },
+        y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#64748b',font:{size:11}}, beginAtZero:true }
+      }
+    }
+  });
 }
 
-// ============ POSTS ============
-async function loadPosts(){
-  const list = document.getElementById('postsList');
-  try{
-    const {data} = await sb.from('az_posts').select('*').order('created_at',{ascending:false});
-    if(!data||!data.length){list.innerHTML='<p style="color:var(--text-light)">No posts yet.</p>';return;}
-    list.innerHTML = data.map(p=>`
-      <div style="border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.8rem">
-        <h4 style="font-size:.9rem;margin-bottom:.3rem">${p.title||'Untitled'}</h4>
-        <p style="font-size:.82rem;color:var(--text-light);margin-bottom:.5rem">${p.description||''}</p>
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <span style="font-size:.72rem;color:var(--text-light)">By ${p.author||'Unknown'} • ${timeAgo(p.created_at)}</span>
-          <button class="btn btn-danger" style="padding:.25rem .6rem;font-size:.72rem" onclick="deletePost('${p.id}')"><i class="fas fa-trash"></i></button>
+function renderRoleChart(users) {
+  const ctx = document.getElementById('role-chart');
+  if (!ctx) return;
+  if (roleChart) { roleChart.destroy(); }
+  const roleCounts = {};
+  users.forEach(u => roleCounts[u.role] = (roleCounts[u.role]||0) + 1);
+  const labels = Object.keys(roleCounts);
+  const data = Object.values(roleCounts);
+  const colors = { admin:'#6366f1', moderator:'#06b6d4', user:'#10b981' };
+  roleChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: labels.map(l=>colors[l]||'#94a3b8'),
+        borderWidth:0, hoverOffset:4 }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false, cutout:'72%',
+      plugins: { legend:{display:false}, tooltip:{ backgroundColor:'rgba(15,20,40,0.9)', padding:12, cornerRadius:8 } }
+    }
+  });
+  const leg = document.getElementById('role-legend');
+  if (leg) leg.innerHTML = labels.map(l => `
+    <div class="legend-item"><div class="legend-dot" style="background:${colors[l]||'#94a3b8'}"></div>
+    <span style="text-transform:capitalize">${l} (${roleCounts[l]})</span></div>`).join('');
+}
+
+function updateMainChart(filter) {
+  if (mainChart) { mainChart.destroy(); mainChart = null; }
+  renderMainChart();
+}
+
+// ---- USERS PAGE ----
+function renderUsersPage() {
+  renderUsersTable();
+}
+
+function renderUsersTable() {
+  let users = DB.get('users');
+  if (usersRoleFilter) users = users.filter(u => u.role === usersRoleFilter);
+  if (usersSearch) {
+    const q = usersSearch.toLowerCase();
+    users = users.filter(u => (u.fname+' '+u.lname).toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || (u.username||'').toLowerCase().includes(q));
+  }
+  users.sort((a,b) => {
+    let va = '', vb = '';
+    if (usersSortField === 'name') { va = a.fname+a.lname; vb = b.fname+b.lname; }
+    else if (usersSortField === 'email') { va = a.email; vb = b.email; }
+    else if (usersSortField === 'role') { va = a.role; vb = b.role; }
+    else if (usersSortField === 'status') { va = a.status; vb = b.status; }
+    else if (usersSortField === 'date') { va = a.joined||0; vb = b.joined||0; }
+    if (va < vb) return -usersSortDir;
+    if (va > vb) return usersSortDir;
+    return 0;
+  });
+
+  const perPage = parseInt(document.getElementById('setting-per-page')?.value || '10');
+  const total = users.length;
+  const totalPages = Math.ceil(total / perPage);
+  if (usersPage > totalPages) usersPage = Math.max(1, totalPages);
+  const paged = users.slice((usersPage-1)*perPage, usersPage*perPage);
+
+  const infoEl = document.getElementById('users-page-info');
+  if (infoEl) infoEl.textContent = total ? `Showing ${(usersPage-1)*perPage+1}-${Math.min(usersPage*perPage,total)} of ${total} users` : '0 users';
+  
+  const tbody = document.getElementById('users-tbody');
+  if (!tbody) return;
+  if (!paged.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state" style="padding:32px 16px"><div class="empty-icon"><i class="fa fa-users"></i></div><div class="empty-title">No users found</div><div class="empty-msg">Try a different filter or add a new user</div></div></td></tr>`;
+  } else {
+    tbody.innerHTML = paged.map(u => {
+      const name = u.fname+' '+u.lname;
+      const col = getColor(u.id);
+      const roleClass = u.role === 'admin' ? 'primary' : u.role === 'moderator' ? 'warning' : 'neutral';
+      const statusClass = u.status === 'active' ? 'success' : 'neutral';
+      const isSelf = u.id === currentUser?.id;
+      return `<tr>
+        <td><div class="user-row-avatar">
+          <div class="avatar" style="background:${col}; width:36px;height:36px;font-size:13px">${initials(name)}</div>
+          <div><div class="user-row-name">${escHtml(name)}${isSelf?' <span style="font-size:10px;color:var(--primary)">(You)</span>':''}</div>
+          <div class="user-row-email">@${escHtml(u.username||'')}</div></div>
+        </div></td>
+        <td><span style="font-size:13px;color:var(--text2)">${escHtml(u.email)}</span></td>
+        <td><span class="badge-wrap badge-${roleClass}">${u.role}</span></td>
+        <td><span class="badge-wrap badge-${statusClass}"><i class="fa fa-circle" style="font-size:8px"></i> ${u.status||'active'}</span></td>
+        <td><span style="font-size:12px;color:var(--text3)">${relTime(u.joined)}</span></td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-xs btn-outline" onclick="editUser('${u.id}')"><i class="fa fa-pen"></i></button>
+            ${(currentUser?.role === 'admin' && !isSelf) ? `<button class="btn btn-xs btn-danger" onclick="deleteUser('${u.id}','${escAttr(name)}')"><i class="fa fa-trash"></i></button>` : ''}
+            <button class="btn btn-xs btn-ghost" onclick="toggleUserStatus('${u.id}')">
+              <i class="fa fa-${u.status==='active'?'ban':'check'}" title="${u.status==='active'?'Deactivate':'Activate'}"></i>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+  renderPagination('users-pagination', usersPage, totalPages, (p) => { usersPage=p; renderUsersTable(); });
+}
+
+function filterUsers(q) { usersSearch = q; usersPage = 1; renderUsersTable(); }
+function setUserRoleFilter(role, btn) {
+  usersRoleFilter = role; usersPage = 1;
+  document.querySelectorAll('[data-role]').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderUsersTable();
+}
+function setUserSortField(f) { usersSortField = f; renderUsersTable(); }
+function sortUsers(f) {
+  if (usersSortField === f) usersSortDir *= -1; else { usersSortField = f; usersSortDir = 1; }
+  renderUsersTable();
+}
+
+function openAddUserModal() {
+  document.getElementById('u-id').value = '';
+  document.getElementById('user-modal-title').innerHTML = '<i class="fa fa-user-plus" style="color:var(--primary)"></i> Add User';
+  document.getElementById('user-form').reset();
+  document.getElementById('u-password').required = true;
+  document.getElementById('u-save-btn').innerHTML = '<i class="fa fa-floppy-disk"></i> Save User';
+  openModal('add-user-modal');
+}
+
+function editUser(id) {
+  const u = DB.get('users').find(u=>u.id===id);
+  if (!u) return;
+  document.getElementById('u-id').value = u.id;
+  document.getElementById('u-fname').value = u.fname;
+  document.getElementById('u-lname').value = u.lname;
+  document.getElementById('u-email').value = u.email;
+  document.getElementById('u-username').value = u.username||'';
+  document.getElementById('u-password').value = '';
+  document.getElementById('u-password').required = false;
+  document.getElementById('u-role').value = u.role;
+  document.getElementById('u-bio').value = u.bio||'';
+  document.getElementById('user-modal-title').innerHTML = '<i class="fa fa-user-pen" style="color:var(--primary)"></i> Edit User';
+  document.getElementById('u-save-btn').innerHTML = '<i class="fa fa-floppy-disk"></i> Update User';
+  openModal('add-user-modal');
+}
+
+function saveUser(e) {
+  e.preventDefault();
+  const id = document.getElementById('u-id').value;
+  const users = DB.get('users');
+  const fname = document.getElementById('u-fname').value.trim();
+  const lname = document.getElementById('u-lname').value.trim();
+  const email = document.getElementById('u-email').value.trim();
+  const username = document.getElementById('u-username').value.trim();
+  const pwd = document.getElementById('u-password').value;
+  const role = document.getElementById('u-role').value;
+  const bio = document.getElementById('u-bio').value.trim();
+  if (id) {
+    const idx = users.findIndex(u=>u.id===id);
+    if (idx !== -1) {
+      users[idx] = { ...users[idx], fname, lname, email, username, role, bio };
+      if (pwd) users[idx].password = pwd;
+      if (users[idx].id === currentUser?.id) { currentUser = users[idx]; updateUserUI(); }
+    }
+    toast('User updated', fname+' '+lname+''s profile has been updated.', 'success');
+  } else {
+    if (users.find(u=>u.email===email)) { alert('Email already exists.'); return; }
+    users.push({ id:'u'+Date.now(), fname, lname, email, username:username||email.split('@')[0], password:pwd, role, bio, status:'active', joined:Date.now() });
+    toast('User added', fname+' '+lname+' has been added.', 'success');
+    addNotification('New user added: ' + fname+' '+lname, 'fa-user-plus', 'var(--success)');
+  }
+  DB.set('users', users);
+  closeModal('add-user-modal');
+  renderUsersTable();
+  updateBadges();
+}
+
+function deleteUser(id, name) {
+  confirm2('Delete User', `Are you sure you want to delete <strong>${escHtml(name)}</strong>? This cannot be undone.`, () => {
+    const users = DB.get('users').filter(u=>u.id!==id);
+    DB.set('users', users);
+    renderUsersTable();
+    updateBadges();
+    toast('User deleted', name+' has been removed.', 'warning');
+  });
+}
+
+function toggleUserStatus(id) {
+  const users = DB.get('users');
+  const idx = users.findIndex(u=>u.id===id);
+  if (idx === -1) return;
+  users[idx].status = users[idx].status === 'active' ? 'inactive' : 'active';
+  DB.set('users', users);
+  renderUsersTable();
+  toast('Status updated', 'User status changed to '+users[idx].status+'.', 'info');
+}
+
+// ---- POSTS PAGE ----
+function renderPostsPage() { renderPostsList(); }
+
+function renderPostsList() {
+  let posts = DB.get('posts');
+  const users = DB.get('users');
+  if (postsFilter === 'published') posts = posts.filter(p=>p.status==='published');
+  else if (postsFilter === 'draft') posts = posts.filter(p=>p.status==='draft');
+  else if (postsFilter === 'pinned') posts = posts.filter(p=>p.pinned);
+  if (postsSearch) {
+    const q = postsSearch.toLowerCase();
+    posts = posts.filter(p => p.title.toLowerCase().includes(q) || p.content.toLowerCase().includes(q));
+  }
+  posts = posts.sort((a,b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return b.date - a.date;
+  });
+
+  const perPage = parseInt(document.getElementById('setting-per-page')?.value || '10');
+  const total = posts.length;
+  const totalPages = Math.ceil(total / perPage);
+  if (postsPage > totalPages) postsPage = Math.max(1, totalPages);
+  const paged = posts.slice((postsPage-1)*perPage, postsPage*perPage);
+
+  const info = document.getElementById('posts-page-info');
+  if (info) info.textContent = total ? `Showing ${(postsPage-1)*perPage+1}-${Math.min(postsPage*perPage,total)} of ${total} posts` : '0 posts';
+
+  const list = document.getElementById('posts-list');
+  if (!list) return;
+  if (!paged.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fa fa-file-lines"></i></div><div class="empty-title">No posts found</div><div class="empty-msg">Try a different filter or write a new post.</div><button class="btn btn-primary" style="width:auto" onclick="openAddPostModal()"><i class="fa fa-plus"></i> New Post</button></div>`;
+    return;
+  }
+  list.innerHTML = paged.map(p => {
+    const author = users.find(u=>u.id===p.author);
+    const authorName = author ? author.fname+' '+author.lname : 'Unknown';
+    const col = getColor(p.author||'x');
+    const canEdit = currentUser?.role === 'admin' || currentUser?.id === p.author;
+    return `<div class="card post-card">
+      <div class="post-card-header">
+        <div class="avatar" style="background:${col}; width:36px;height:36px;font-size:13px">${initials(authorName)}</div>
+        <div class="post-card-meta">
+          <div class="post-card-author">${escHtml(authorName)}</div>
+          <div class="post-card-date">${relTime(p.date)} &bull; <span class="badge-wrap badge-info" style="font-size:10px;padding:2px 7px">${escHtml(p.category||'General')}</span></div>
         </div>
-      </div>`).join('');
-    document.getElementById('dashPosts').textContent = data.length;
-  }catch(e){list.innerHTML='<p style="color:var(--text-light)">Error loading posts.</p>';}
-}
-
-async function createPost(){
-  const title = document.getElementById('postTitle').value.trim();
-  const description = document.getElementById('postDesc').value.trim();
-  const author = document.getElementById('postAuthor').value.trim() || currentAdmin?.fname || 'Admin';
-  if(!title){showToast('Title required','error');return;}
-  try{
-    const {error} = await sb.from('az_posts').insert({title,description,author,userid:currentAdmin?.id||0,imagepost:'',created_at:new Date().toISOString()});
-    if(error) throw error;
-    document.getElementById('postTitle').value='';
-    document.getElementById('postDesc').value='';
-    showToast('Post created!');
-    loadPosts();
-  }catch(e){showToast('Error: '+e.message,'error');}
-}
-
-async function deletePost(id){
-  if(!confirm('Delete this post?')) return;
-  await sb.from('az_posts').delete().eq('id',id);
-  showToast('Post deleted');
-  loadPosts();
-}
-
-// ============ SHOUTBOX ============
-async function loadShouts(){
-  const list = document.getElementById('shoutList');
-  try{
-    const {data} = await sb.from('az_shouts').select('*').order('created_at',{ascending:false}).limit(30);
-    if(!data||!data.length){list.innerHTML='<p style="color:var(--text-light);font-size:.85rem">No messages yet. Be the first to shout!</p>';return;}
-    const colors = ['#6366f1','#8b5cf6','#3b82f6','#10b981','#f59e0b','#ef4444'];
-    list.innerHTML = data.reverse().map((s,i)=>`
-      <div class="shout-item">
-        <div class="shout-avatar" style="background:${colors[i%colors.length]}">${(s.name||'?')[0].toUpperCase()}</div>
-        <div class="shout-bubble">
-          <div class="shout-name">${s.name||'Anonymous'}</div>
-          <div class="shout-text">${s.message||''}</div>
-          <div class="shout-time">${timeAgo(s.created_at)}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+          ${p.pinned ? '<span class="badge-wrap badge-warning"><i class="fa fa-thumbtack"></i> Pinned</span>' : ''}
+          <span class="badge-wrap badge-${p.status==='published'?'success':'neutral'}">${p.status}</span>
+          ${canEdit ? `<button class="btn btn-xs btn-outline" onclick="editPost('${p.id}')"><i class="fa fa-pen"></i></button>
+          <button class="btn btn-xs btn-danger" onclick="deletePost('${p.id}',\`${escAttr(p.title)}\`)"><i class="fa fa-trash"></i></button>` : ''}
         </div>
-      </div>`).join('');
-    list.scrollTop = list.scrollHeight;
-    document.getElementById('dashShouts').textContent = data.length;
-  }catch(e){list.innerHTML='<p style="color:var(--text-light)">Error loading messages.</p>';}
+      </div>
+      <h3 style="font-size:17px;font-weight:700;margin-bottom:8px">${escHtml(p.title)}</h3>
+      <div class="post-card-body">${escHtml(p.content)}</div>
+      <div class="post-card-footer">
+        <button class="post-action-btn ${p.likedBy?.includes(currentUser?.id)?'liked':''}" onclick="likePost('${p.id}',this)">
+          <i class="fa fa-heart"></i> ${p.likes||0}
+        </button>
+        <span class="post-action-btn" style="cursor:default"><i class="fa fa-eye"></i> ${p.views||0}</span>
+        ${p.status==='draft' && canEdit ? `<button class="post-action-btn" onclick="publishPost('${p.id}')"><i class="fa fa-upload"></i> Publish</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  renderPagination('posts-pagination', postsPage, totalPages, (p) => { postsPage=p; renderPostsList(); });
 }
 
-async function sendShout(){
-  const name = document.getElementById('shoutName').value.trim();
-  const message = document.getElementById('shoutMsg').value.trim();
-  if(!name||!message){showToast('Name and message required','error');return;}
-  try{
-    const {error} = await sb.from('az_shouts').insert({name,message,created_at:new Date().toISOString()});
-    if(error) throw error;
-    document.getElementById('shoutMsg').value='';
-    showToast('Shout sent!');
-    loadShouts();
-  }catch(e){showToast('Error: '+e.message,'error');}
+function filterPosts(q) { postsSearch = q; postsPage = 1; renderPostsList(); }
+function setPostFilter(f, btn) {
+  postsFilter = f; postsPage = 1;
+  document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderPostsList();
 }
 
-// ============ PROFILE ============
-async function loadProfile(){
-  if(!currentAdmin) return;
-  try{
-    const {data} = await sb.from('az_posts').select('*').eq('userid', currentAdmin.id||0);
-    const list = document.getElementById('profilePosts');
-    if(!data||!data.length){list.innerHTML='<p style="color:var(--text-light)">No posts yet.</p>';return;}
-    list.innerHTML = data.map(p=>`<div style="border:1px solid var(--border);border-radius:10px;padding:.8rem;margin-bottom:.6rem"><h4 style="font-size:.88rem">${p.title||'Untitled'}</h4><p style="font-size:.8rem;color:var(--text-light)">${p.description||''}</p></div>`).join('');
-  }catch(e){}
+function openAddPostModal() {
+  document.getElementById('p-id').value = '';
+  document.getElementById('post-modal-title').innerHTML = '<i class="fa fa-file-pen" style="color:var(--primary)"></i> New Post';
+  document.getElementById('post-form').reset();
+  openModal('add-post-modal');
 }
 
-// ============ SETTINGS ============
-function saveSettings(){
-  showToast('Settings saved!');
+function editPost(id) {
+  const post = DB.get('posts').find(p=>p.id===id);
+  if (!post) return;
+  document.getElementById('p-id').value = post.id;
+  document.getElementById('p-title').value = post.title;
+  document.getElementById('p-content').value = post.content;
+  document.getElementById('p-category').value = post.category||'General';
+  document.getElementById('p-status').value = post.status||'published';
+  document.getElementById('p-pinned').checked = !!post.pinned;
+  document.getElementById('post-modal-title').innerHTML = '<i class="fa fa-file-pen" style="color:var(--primary)"></i> Edit Post';
+  openModal('add-post-modal');
 }
 
-// ============ UTILITIES ============
-function timeAgo(ts){
-  if(!ts) return 'Unknown';
-  const d = new Date(ts), now = new Date();
-  const diff = Math.floor((now-d)/1000);
-  if(diff<60) return diff+'s ago';
-  if(diff<3600) return Math.floor(diff/60)+'m ago';
-  if(diff<86400) return Math.floor(diff/3600)+'h ago';
-  return Math.floor(diff/86400)+'d ago';
+function savePost(e) {
+  e.preventDefault();
+  const id = document.getElementById('p-id').value;
+  const posts = DB.get('posts');
+  const title = document.getElementById('p-title').value.trim();
+  const content = document.getElementById('p-content').value.trim();
+  const category = document.getElementById('p-category').value;
+  const status = document.getElementById('p-status').value;
+  const pinned = document.getElementById('p-pinned').checked;
+  if (id) {
+    const idx = posts.findIndex(p=>p.id===id);
+    if (idx !== -1) posts[idx] = { ...posts[idx], title, content, category, status, pinned };
+    toast('Post updated', title+' has been updated.', 'success');
+  } else {
+    posts.push({ id:'p'+Date.now(), title, content, category, status, pinned, author:currentUser?.id, likes:0, views:0, likedBy:[], date:Date.now() });
+    toast('Post published', title+' is now live.', 'success');
+    addNotification('New post: '+title, 'fa-file-lines', 'var(--accent)');
+  }
+  DB.set('posts', posts);
+  closeModal('add-post-modal');
+  renderPostsList();
+  updateBadges();
 }
 
-function showToast(msg, type='success'){
-  const t = document.getElementById('toast');
-  const m = document.getElementById('toastMsg');
-  if(!t||!m) return;
-  m.textContent = msg;
-  t.querySelector('i').className = type==='error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
-  t.querySelector('i').style.color = type==='error' ? 'var(--red)' : 'var(--green)';
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 3000);
+function deletePost(id, title) {
+  confirm2('Delete Post', `Delete "<strong>${escHtml(title)}</strong>"? This cannot be undone.`, () => {
+    DB.set('posts', DB.get('posts').filter(p=>p.id!==id));
+    renderPostsList(); updateBadges();
+    toast('Post deleted', title+' has been removed.', 'warning');
+  });
 }
 
-// ============ AUTO SETUP DB TABLES ============
-async function setupTables(){
-  // Just check if tables exist via simple query, if error they don't exist yet
-  // Tables need to be created in Supabase dashboard
-  // This is handled by Supabase setup
+function likePost(id, btn) {
+  if (!currentUser) return;
+  const posts = DB.get('posts');
+  const idx = posts.findIndex(p=>p.id===id);
+  if (idx === -1) return;
+  const likedBy = posts[idx].likedBy||[];
+  const already = likedBy.includes(currentUser.id);
+  if (already) { posts[idx].likedBy = likedBy.filter(x=>x!==currentUser.id); posts[idx].likes = Math.max(0,(posts[idx].likes||1)-1); }
+  else { posts[idx].likedBy = [...likedBy, currentUser.id]; posts[idx].likes = (posts[idx].likes||0)+1; }
+  DB.set('posts', posts);
+  btn.classList.toggle('liked', !already);
+  btn.innerHTML = '<i class="fa fa-heart"></i> '+posts[idx].likes;
 }
 
-// ============ INIT ============
-checkAuth();
+function publishPost(id) {
+  const posts = DB.get('posts');
+  const idx = posts.findIndex(p=>p.id===id);
+  if (idx !== -1) { posts[idx].status = 'published'; DB.set('posts', posts); renderPostsList(); toast('Post published','Post is now live.','success'); }
+}
+
+// ---- NOTICES PAGE ----
+function renderNoticesPage() {
+  const notices = DB.get('notices');
+  const list = document.getElementById('notices-list');
+  if (!list) return;
+  if (!notices.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fa fa-bullhorn"></i></div><div class="empty-title">No notices yet</div><button class="btn btn-primary" style="width:auto" onclick="openAddNoticeModal()"><i class="fa fa-plus"></i> Add Notice</button></div>`;
+    return;
+  }
+  list.innerHTML = [...notices].sort((a,b)=>b.date-a.date).map(n => {
+    const canEdit = currentUser?.role === 'admin' || currentUser?.role === 'moderator';
+    return `<div class="notice-item">
+      <div class="notice-item-header">
+        <div>
+          <div class="notice-title">${escHtml(n.title)}</div>
+          <div class="notice-meta"><i class="fa fa-clock"></i> ${relTime(n.date)} ${n.expires?' &bull; Expires '+new Date(n.expires).toLocaleDateString():''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="badge-wrap badge-${n.priority==='urgent'?'danger':n.priority==='important'?'warning':'info'}">${n.priority}</span>
+          ${canEdit ? `<button class="btn btn-xs btn-outline" onclick="editNotice('${n.id}')"><i class="fa fa-pen"></i></button>
+          <button class="btn btn-xs btn-danger" onclick="deleteNotice('${n.id}',\`${escAttr(n.title)}\`)"><i class="fa fa-trash"></i></button>` : ''}
+        </div>
+      </div>
+      <div class="notice-body">${escHtml(n.body)}</div>
+    </div>`;
+  }).join('');
+}
+
+function openAddNoticeModal() {
+  document.getElementById('n-id').value = '';
+  document.getElementById('notice-modal-title').innerHTML = '<i class="fa fa-bullhorn" style="color:var(--primary)"></i> Add Notice';
+  document.getElementById('notice-form').reset();
+  openModal('add-notice-modal');
+}
+function editNotice(id) {
+  const n = DB.get('notices').find(n=>n.id===id);
+  if (!n) return;
+  document.getElementById('n-id').value = n.id;
+  document.getElementById('n-title').value = n.title;
+  document.getElementById('n-body').value = n.body;
+  document.getElementById('n-priority').value = n.priority||'normal';
+  if (n.expires) document.getElementById('n-expires').value = new Date(n.expires).toISOString().split('T')[0];
+  document.getElementById('notice-modal-title').innerHTML = '<i class="fa fa-bullhorn" style="color:var(--primary)"></i> Edit Notice';
+  openModal('add-notice-modal');
+}
+function saveNotice(e) {
+  e.preventDefault();
+  const id = document.getElementById('n-id').value;
+  const notices = DB.get('notices');
+  const title = document.getElementById('n-title').value.trim();
+  const body = document.getElementById('n-body').value.trim();
+  const priority = document.getElementById('n-priority').value;
+  const expiresStr = document.getElementById('n-expires').value;
+  const expires = expiresStr ? new Date(expiresStr).getTime() : null;
+  if (id) {
+    const idx = notices.findIndex(n=>n.id===id);
+    if (idx !== -1) notices[idx] = { ...notices[idx], title, body, priority, expires };
+    toast('Notice updated', title+' has been updated.', 'success');
+  } else {
+    notices.push({ id:'n'+Date.now(), title, body, priority, expires, author:currentUser?.id, date:Date.now() });
+    toast('Notice published', title+' is now active.', 'success');
+    addNotification('New notice: '+title, 'fa-bullhorn', 'var(--warning)');
+  }
+  DB.set('notices', notices);
+  closeModal('add-notice-modal');
+  renderNoticesPage();
+}
+function deleteNotice(id, title) {
+  confirm2('Delete Notice', `Delete "${escHtml(title)}"? This cannot be undone.`, () => {
+    DB.set('notices', DB.get('notices').filter(n=>n.id!==id));
+    renderNoticesPage();
+    toast('Notice deleted', title+' has been removed.', 'warning');
+  });
+}
+
+// ---- SHOUTBOX ----
+function renderShoutbox() {
+  const shouts = DB.get('shouts');
+  const users = DB.get('users');
+  const list = document.getElementById('shout-list');
+  if (!list) return;
+  if (!shouts.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon"><i class="fa fa-comments"></i></div><div class="empty-title">No messages yet</div><div class="empty-msg">Be the first to say something!</div></div>';
+    return;
+  }
+  list.innerHTML = shouts.map(s => {
+    const user = users.find(u=>u.id===s.userId);
+    const name = user ? user.fname+' '+user.lname : 'Unknown';
+    const isMine = s.userId === currentUser?.id;
+    const col = getColor(s.userId||'x');
+    return `<div class="shout-item ${isMine?'mine':''}">
+      ${!isMine ? `<div class="avatar-sm" style="background:${col}; width:30px;height:30px;font-size:11px;flex-shrink:0">${initials(name)}</div>` : ''}
+      <div class="shout-bubble">
+        ${!isMine ? `<div class="shout-user">${escHtml(name)}</div>` : ''}
+        <div class="shout-msg">${escHtml(s.msg)}</div>
+        <div class="shout-time">${relTime(s.date)}
+          ${currentUser?.role==='admin' ? `<span style="margin-left:8px;cursor:pointer;color:var(--danger);font-size:10px" onclick="deleteShout('${s.id}')"><i class="fa fa-trash"></i></span>` : ''}
+        </div>
+      </div>
+      ${isMine ? `<div class="avatar-sm" style="background:${col}; width:30px;height:30px;font-size:11px;flex-shrink:0">${initials(name)}</div>` : ''}
+    </div>`;
+  }).join('');
+  list.scrollTop = list.scrollHeight;
+}
+
+function sendShout() {
+  const inp = document.getElementById('shout-input');
+  if (!inp) return;
+  const msg = inp.value.trim();
+  if (!msg || !currentUser) return;
+  const shouts = DB.get('shouts');
+  shouts.push({ id:'s'+Date.now(), userId:currentUser.id, msg, date:Date.now() });
+  DB.set('shouts', shouts);
+  inp.value = '';
+  renderShoutbox();
+  updateBadges();
+}
+
+function shoutKeyHandler(e) {
+  if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); sendShout(); }
+}
+
+function deleteShout(id) {
+  DB.set('shouts', DB.get('shouts').filter(s=>s.id!==id));
+  renderShoutbox(); updateBadges();
+}
+
+function clearShoutbox() {
+  confirm2('Clear Shoutbox', 'Are you sure you want to delete all shoutbox messages?', () => {
+    DB.set('shouts', []);
+    renderShoutbox(); updateBadges();
+    toast('Shoutbox cleared', 'All messages have been deleted.', 'warning');
+  });
+}
+
+// ---- PROFILE PAGE ----
+function renderProfilePage() {
+  if (!currentUser) return;
+  const name = currentUser.fname + ' ' + currentUser.lname;
+  const col = getColor(currentUser.id);
+  const role = currentUser.role === 'admin' ? 'Administrator' : currentUser.role === 'moderator' ? 'Moderator' : 'User';
+  const posts = DB.get('posts').filter(p=>p.author===currentUser.id);
+  const shouts = DB.get('shouts').filter(s=>s.userId===currentUser.id);
+  const notices = DB.get('notices').filter(n=>n.author===currentUser.id);
+
+  const avEl = document.getElementById('profile-avatar-xl');
+  if (avEl) { avEl.textContent = initials(name); avEl.style.background = `linear-gradient(135deg, ${col}, ${col}cc)`; }
+  const pn = document.getElementById('profile-name'); if (pn) pn.textContent = name;
+  const pe = document.getElementById('profile-email'); if (pe) pe.textContent = currentUser.email;
+  const prb = document.getElementById('profile-role-badge'); if (prb) prb.textContent = role;
+  const ps_posts = document.getElementById('ps-posts'); if (ps_posts) ps_posts.textContent = posts.length;
+  const ps_shouts = document.getElementById('ps-shouts'); if (ps_shouts) ps_shouts.textContent = shouts.length;
+  const ps_notices = document.getElementById('ps-notices'); if (ps_notices) ps_notices.textContent = notices.length;
+
+  const pic = document.getElementById('profile-info-content');
+  if (pic) pic.innerHTML = [
+    ['User ID', currentUser.id],
+    ['Username', '@'+(currentUser.username||'—')],
+    ['Role', role],
+    ['Status', currentUser.status||'active'],
+    ['Joined', new Date(currentUser.joined).toLocaleDateString('en-IN', {year:'numeric',month:'long',day:'numeric'})],
+    ['Bio', currentUser.bio||'No bio added yet.']
+  ].map(([k,v]) => `<div class="setting-row" style="padding:10px 0">
+    <span class="form-label" style="margin:0;min-width:80px">${k}</span>
+    <span style="font-size:14px;color:var(--text)">${escHtml(String(v))}</span>
+  </div>`).join('');
+
+  const pp = document.getElementById('profile-posts');
+  if (pp) {
+    if (!posts.length) pp.innerHTML = '<div class="empty-state" style="padding:24px 8px"><div class="empty-msg">You haven't written any posts yet.</div><button class="btn btn-primary btn-sm" onclick="navigateTo('posts')"><i class="fa fa-pen"></i> Write Post</button></div>';
+    else pp.innerHTML = posts.slice(0,5).map(p => `<div class="activity-item">
+      <div class="activity-icon" style="background:rgba(6,182,212,0.1);color:var(--accent)"><i class="fa fa-file-lines"></i></div>
+      <div class="activity-content">
+        <div class="activity-text"><strong>${escHtml(p.title)}</strong></div>
+        <div class="activity-time">${relTime(p.date)} &bull; ${p.likes||0} likes</div>
+      </div>
+    </div>`).join('');
+  }
+}
+
+function editProfile() {
+  if (!currentUser) return;
+  document.getElementById('ep-fname').value = currentUser.fname;
+  document.getElementById('ep-lname').value = currentUser.lname;
+  document.getElementById('ep-bio').value = currentUser.bio||'';
+  openModal('edit-profile-modal');
+}
+
+function saveProfileChanges(e) {
+  e.preventDefault();
+  const users = DB.get('users');
+  const idx = users.findIndex(u=>u.id===currentUser.id);
+  if (idx === -1) return;
+  users[idx].fname = document.getElementById('ep-fname').value.trim() || users[idx].fname;
+  users[idx].lname = document.getElementById('ep-lname').value.trim() || users[idx].lname;
+  users[idx].bio = document.getElementById('ep-bio').value.trim();
+  DB.set('users', users);
+  currentUser = users[idx];
+  closeModal('edit-profile-modal');
+  updateUserUI();
+  renderProfilePage();
+  toast('Profile updated', 'Your profile has been saved.', 'success');
+}
+
+// ---- SETTINGS ----
+function setSettingsTab(tab, btn) {
+  document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.settings-tab').forEach(b => b.classList.remove('active'));
+  const sec = document.getElementById('settings-'+tab); if (sec) sec.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function applyThemeToggle(isDark) {
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.innerHTML = isDark ? '<i class="fa fa-moon"></i>' : '<i class="fa fa-sun"></i>';
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  const toggleEl = document.getElementById('toggle-dark');
+  if (toggleEl) toggleEl.checked = (next === 'dark');
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.innerHTML = next === 'dark' ? '<i class="fa fa-moon"></i>' : '<i class="fa fa-sun"></i>';
+  localStorage.setItem('az_theme', next);
+}
+
+function applyCompactSidebar(compact) {
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar) sidebar.classList.toggle('collapsed', compact);
+  document.body.classList.toggle('sidebar-collapsed', compact);
+}
+
+function applyAnimations(enabled) {
+  document.documentElement.style.setProperty('--transition', enabled ? '0.2s cubic-bezier(0.4,0,0.2,1)' : '0s');
+}
+
+function setAccent(color, el) {
+  document.querySelectorAll('.color-swatch').forEach(s => s.style.border = '2px solid transparent');
+  el.style.border = '2px solid white';
+  document.documentElement.style.setProperty('--primary', color);
+  const darkHex = darkenColor(color, 20);
+  document.documentElement.style.setProperty('--primary-dark', darkHex);
+  document.documentElement.style.setProperty('--primary-glow', color + '55');
+  toast('Accent updated', 'Theme color has been changed.', 'success');
+}
+
+function darkenColor(hex, percent) {
+  const num = parseInt(hex.slice(1), 16);
+  const r = Math.max(0, (num >> 16) - percent * 2);
+  const g = Math.max(0, ((num >> 8) & 0xff) - percent * 2);
+  const b = Math.max(0, (num & 0xff) - percent * 2);
+  return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+}
+
+function updatePerPage(val) { renderUsersTable(); renderPostsList(); }
+
+function saveGeneralSettings() {
+  toast('Settings saved', 'General settings have been updated.', 'success');
+}
+
+function resetDemoData() {
+  confirm2('Reset Demo Data', 'This will restore all default demo data. Your custom data will be replaced.', () => {
+    localStorage.removeItem('az_initialized');
+    localStorage.removeItem('az_users');
+    localStorage.removeItem('az_posts');
+    localStorage.removeItem('az_notices');
+    localStorage.removeItem('az_shouts');
+    localStorage.removeItem('az_notifications');
+    initDemoData();
+    updateBadges(); loadNotifications();
+    navigateTo('dashboard');
+    toast('Demo data restored', 'All default data has been loaded.', 'success');
+  });
+}
+
+function exportData() {
+  const data = {
+    users: DB.get('users'),
+    posts: DB.get('posts'),
+    notices: DB.get('notices'),
+    shouts: DB.get('shouts'),
+    exported: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'adminzone-export-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  toast('Export complete', 'Data downloaded as JSON.', 'success');
+}
+
+function dangerZone() {
+  confirm2('⚠️ Clear ALL Data', 'This will permanently delete all users, posts, notices, and messages. This CANNOT be undone.', () => {
+    ['az_users','az_posts','az_notices','az_shouts','az_notifications','az_initialized','az_session'].forEach(k => localStorage.removeItem(k));
+    handleLogout();
+    toast('All data cleared', 'All local data has been deleted.', 'warning');
+  }, true);
+}
+
+function changePassword(e) {
+  e.preventDefault();
+  const current = document.getElementById('cp-current').value;
+  const newPwd = document.getElementById('cp-new').value;
+  const confirm = document.getElementById('cp-confirm').value;
+  if (current !== currentUser?.password) { toast('Error', 'Current password is incorrect.', 'error'); return; }
+  if (newPwd.length < 6) { toast('Error', 'New password must be at least 6 characters.', 'error'); return; }
+  if (newPwd !== confirm) { toast('Error', 'Passwords do not match.', 'error'); return; }
+  const users = DB.get('users');
+  const idx = users.findIndex(u=>u.id===currentUser?.id);
+  if (idx !== -1) { users[idx].password = newPwd; DB.set('users', users); currentUser = users[idx]; }
+  closeModal('change-password-modal');
+  toast('Password updated', 'Your password has been changed successfully.', 'success');
+}
+
+function openChangePasswordModal() { openModal('change-password-modal'); }
+
+// ---- SIDEBAR / TOPBAR ----
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile) {
+    sidebar.classList.toggle('mobile-open');
+    document.getElementById('mobile-overlay').classList.toggle('active', sidebar.classList.contains('mobile-open'));
+  } else {
+    sidebar.classList.toggle('collapsed');
+    document.body.classList.toggle('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+    const toggleEl = document.getElementById('toggle-compact');
+    if (toggleEl) toggleEl.checked = sidebar.classList.contains('collapsed');
+  }
+}
+
+function closeMobileSidebar() {
+  if (window.innerWidth > 768) return;
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('mobile-overlay').classList.remove('active');
+}
+
+function toggleUserDropdown() {
+  const d = document.getElementById('user-dropdown');
+  const isOpen = d.classList.contains('open');
+  closeAllDropdowns();
+  if (!isOpen) { d.classList.add('open'); document.addEventListener('click', outsideDropdownClose, {once:true}); }
+}
+function toggleUserDropdownSidebar() { toggleUserDropdown(); }
+
+function toggleNotifPanel() {
+  const p = document.getElementById('notif-panel');
+  const isOpen = p.classList.contains('open');
+  closeAllDropdowns();
+  if (!isOpen) { p.classList.add('open'); document.addEventListener('click', outsideDropdownClose, {once:true}); }
+}
+
+function outsideDropdownClose(e) {
+  if (!e.target.closest('.dropdown') && !e.target.closest('.notif-panel') && !e.target.closest('.topbar-btn')) {
+    closeAllDropdowns();
+  }
+}
+
+function closeAllDropdowns() {
+  document.getElementById('user-dropdown')?.classList.remove('open');
+  document.getElementById('notif-panel')?.classList.remove('open');
+}
+
+// ---- NOTIFICATIONS ----
+function loadNotifications() {
+  const notifs = DB.get('notifications');
+  const unread = notifs.filter(n=>!n.read).length;
+  const badge = document.getElementById('notif-badge');
+  if (badge) { badge.textContent = unread; badge.style.display = unread ? 'flex' : 'none'; }
+  const list = document.getElementById('notif-list');
+  if (!list) return;
+  if (!notifs.length) {
+    list.innerHTML = '<div class="empty-state" style="padding:24px"><div class="empty-icon" style="font-size:32px"><i class="fa fa-bell-slash"></i></div><div class="empty-msg">No notifications</div></div>';
+    return;
+  }
+  list.innerHTML = notifs.slice(0,8).map(n => `
+    <div class="notif-item ${!n.read?'unread':''}">
+      <div class="notif-dot"></div>
+      <div style="width:34px;height:34px;border-radius:10px;background:${n.color}22;color:${n.color};display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">
+        <i class="fa ${n.icon}"></i>
+      </div>
+      <div style="flex:1">
+        <div class="notif-text">${escHtml(n.text)}</div>
+        <div class="notif-time">${relTime(n.time)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function markAllRead() {
+  const notifs = DB.get('notifications').map(n=>({...n,read:true}));
+  DB.set('notifications', notifs);
+  loadNotifications();
+}
+
+function addNotification(text, icon, color) {
+  const notifs = DB.get('notifications');
+  notifs.unshift({ id:'notif'+Date.now(), text, time:Date.now(), read:false, icon, color });
+  DB.set('notifications', notifs.slice(0,20));
+  loadNotifications();
+}
+
+// ---- SEARCH ----
+function globalSearch(q) {
+  if (!q.trim()) return;
+  // Highlight matching in current page — simple implementation
+}
+
+// ---- MODALS ----
+function openModal(id) {
+  const o = document.getElementById(id);
+  if (o) { o.classList.add('open'); document.body.style.overflow = 'hidden'; }
+}
+function closeModal(id) {
+  const o = document.getElementById(id);
+  if (o) { o.classList.remove('open'); document.body.style.overflow = ''; }
+}
+
+// ---- CONFIRM ----
+function confirm2(title, msg, callback, isDanger=false) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-message').innerHTML = msg;
+  const btn = document.getElementById('confirm-ok');
+  btn.className = 'btn ' + (isDanger ? 'btn-danger' : 'btn-danger');
+  pendingConfirm = callback;
+  openModal('confirm-modal');
+}
+function confirmAction() {
+  if (pendingConfirm) { pendingConfirm(); pendingConfirm = null; }
+  closeModal('confirm-modal');
+}
+
+// ---- TOAST ----
+function toast(title, msg, type='info') {
+  const icons = { success:'fa-circle-check', error:'fa-circle-xmark', warning:'fa-triangle-exclamation', info:'fa-circle-info' };
+  const c = document.getElementById('toast-container');
+  if (!c) return;
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.innerHTML = `
+    <div class="toast-icon"><i class="fa ${icons[type]||icons.info}"></i></div>
+    <div class="toast-content"><div class="toast-title">${escHtml(title)}</div><div class="toast-msg">${escHtml(msg)}</div></div>
+    <button class="toast-close" onclick="this.closest('.toast').remove()"><i class="fa fa-xmark"></i></button>`;
+  c.appendChild(t);
+  requestAnimationFrame(() => { requestAnimationFrame(() => t.classList.add('show')); });
+  setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 300); }, 4000);
+}
+
+// ---- PAGINATION ----
+function renderPagination(containerId, currentPg, totalPages, onChange) {
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  if (totalPages <= 1) { c.innerHTML = ''; return; }
+  let html = `<button class="page-btn" onclick="(${onChange})(1)" ${currentPg===1?'disabled':''}><i class="fa fa-angles-left"></i></button>
+    <button class="page-btn" onclick="(${onChange})(${currentPg-1})" ${currentPg===1?'disabled':''}><i class="fa fa-angle-left"></i></button>`;
+  const start = Math.max(1, currentPg - 2);
+  const end = Math.min(totalPages, currentPg + 2);
+  for (let i = start; i <= end; i++) {
+    html += `<button class="page-btn ${i===currentPg?'active':''}" onclick="(${onChange})(${i})">${i}</button>`;
+  }
+  html += `<button class="page-btn" onclick="(${onChange})(${currentPg+1})" ${currentPg===totalPages?'disabled':''}><i class="fa fa-angle-right"></i></button>
+    <button class="page-btn" onclick="(${onChange})(${totalPages})" ${currentPg===totalPages?'disabled':''}><i class="fa fa-angles-right"></i></button>`;
+  c.innerHTML = html;
+}
+
+// ---- UTILITIES ----
+function escHtml(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function escAttr(str) {
+  return String(str||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/\\/g,'\\\\').replace(/`/g,'\\u0060');
+}
+function relTime(ts) {
+  if (!ts) return '—';
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff/60000);
+  const hrs = Math.floor(diff/3600000);
+  const days = Math.floor(diff/86400000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return mins + 'm ago';
+  if (hrs < 24) return hrs + 'h ago';
+  if (days < 7) return days + 'd ago';
+  return new Date(ts).toLocaleDateString('en-IN', {month:'short',day:'numeric',year:'numeric'});
+}
+
+// ---- INIT ----
+document.addEventListener('DOMContentLoaded', () => {
+  initDemoData();
+  
+  // Restore theme
+  const savedTheme = localStorage.getItem('az_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  const tDark = document.getElementById('toggle-dark');
+  if (tDark) tDark.checked = savedTheme === 'dark';
+  const themeBtn = document.getElementById('theme-btn');
+  if (themeBtn) themeBtn.innerHTML = savedTheme === 'dark' ? '<i class="fa fa-moon"></i>' : '<i class="fa fa-sun"></i>';
+
+  // Check session
+  setTimeout(() => {
+    document.getElementById('loading-overlay').classList.add('hidden');
+    if (checkSession()) {
+      startApp();
+    } else {
+      document.getElementById('login-screen').classList.remove('hidden');
+    }
+  }, 800);
+
+  // Close dropdowns on outside click
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#topbar') && !e.target.closest('.dropdown-menu') && !e.target.closest('.notif-panel')) {
+      closeAllDropdowns();
+    }
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+      document.body.style.overflow = '';
+      closeAllDropdowns();
+    }
+  });
+});
 </script>
 </body>
 </html>
