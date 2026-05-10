@@ -1159,33 +1159,29 @@ function delNotice(id){
     toast('Notice deleted.','ok'); updateCounts(); renderNotices();
   });
 }
-function parseMd(text){
-  if(!text) return '';
-  var t=text;
-  t=t.replace(/```([sS]*?)```/g,'<pre><code>$1</code></pre>');
-  t=t.replace(/`([^`]+)`/g,'<code>$1</code>');
+function parseMd(t){
+  if(!t) return '';
   t=t.replace(/^### (.+)$/gm,'<h3>$1</h3>');
   t=t.replace(/^## (.+)$/gm,'<h2>$1</h2>');
   t=t.replace(/^# (.+)$/gm,'<h1>$1</h1>');
-  t=t.replace(/**(.+?)**/g,'<strong>$1</strong>');
-  t=t.replace(/*(.+?)*/g,'<em>$1</em>');
+  t=t.replace(/[*][*]([^*]+)[*][*]/g,'<strong>$1</strong>');
+  t=t.replace(/[*]([^*]+)[*]/g,'<em>$1</em>');
   t=t.replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>');
-  t=t.replace(/^- (.+)$/gm,'<li>$1</li>');
-  t=t.replace(/[([^]]+)](([^)]+))/g,'<a href="$2" target="_blank">$1</a>');
-  t=t.split('
+  t=t.replace(/^[-] (.+)$/gm,'<li>$1</li>');
+  var ps=t.split(/
 
-').map(function(para){
-    if(para.match(/^<(h[123]|ul|ol|li|pre|blockquote)/)) return para;
-    if(!para.trim()) return '';
-    return '<p>'+para.replace(/
-/g,'<br>')+'</p>';
+/);
+  t=ps.map(function(p){
+    if(!p.trim()) return '';
+    if(/^<(h[123]|li|blockquote)/.test(p)) return p;
+    return '<p>'+p+'</p>';
   }).join('');
   return t;
 }
 function updatePreview(){
   var txt=document.getElementById('pContent');
   var prev=document.getElementById('mdPrev');
-  if(txt&&prev){ prev.innerHTML=parseMd(txt.value)||'<span style="color:var(--tx3)">Preview will appear here...</span>'; }
+  if(txt&&prev){ prev.innerHTML=parseMd(txt.value)||'<span style="color:var(--tx3)">Preview here...</span>'; }
 }
 function mdInsert(before, after){
   var ta=document.getElementById('pContent');
@@ -1283,7 +1279,7 @@ function openPostMod(){
   document.getElementById('pTitle').value=''; document.getElementById('pContent').value='';
   document.getElementById('pTags').value='';
   document.getElementById('pCat').value='Tutorial'; document.getElementById('pStat').value='Draft';
-  document.getElementById('mdPrev').innerHTML='<span style="color:var(--tx3)">Preview will appear here...</span>';
+  document.getElementById('mdPrev').innerHTML='Preview here...';
   openMo('mPost');
 }
 function editPost(id){
