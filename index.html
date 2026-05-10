@@ -897,19 +897,43 @@ function startClock(){
   tick(); setInterval(tick,1000);
 }
 
+function goPageByName(name){
+  var btns = document.querySelectorAll('.nav-btn');
+  var nameMap = {dash:0, users:1, notices:2, posts:3, shout:4, audit:5, profile:6, settings:7};
+  var idx = nameMap[name];
+  goPg(name, idx !== undefined ? btns[idx] : null);
+}
 function renderDash(){
   var sess = DB.getObj('az_session');
   var users=DB.get('az_users');
   var posts=DB.get('az_posts');
   var notices=DB.get('az_notices');
   var shouts=DB.get('az_shouts');
-  // Welcome card
+  // Welcome card - use data-action to avoid inline quote issues
   var wc=document.getElementById('wcWrap');
   if(wc){
     var tod=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
     var pubCt=posts.filter(function(p){ return p.status==='Published'; }).length;
     var actCt=users.filter(function(u){ return u.status==='active'; }).length;
-    wc.innerHTML='<div class="wc"><div class="wc-txt"><h2>Welcome back, '+sess.name+'! <span style="font-size:20px">&#128075;</span></h2><p>'+tod+' &mdash; Here is what is happening in your admin zone today.</p><div class="wc-actions"><button class="wc-btn wc-btn-solid" onclick="goPg('users',document.querySelectorAll('.nav-btn')[1])"><i class="fas fa-users"></i> Manage Users</button><button class="wc-btn wc-btn-w" onclick="goPg('posts',document.querySelectorAll('.nav-btn')[3])"><i class="fas fa-plus"></i> New Post</button><button class="wc-btn wc-btn-w" onclick="goPg('audit',document.querySelectorAll('.nav-btn')[5])"><i class="fas fa-history"></i> View Audit Log</button></div></div><div class="wc-stats"><div class="wc-stat"><div class="wsv">'+actCt+'</div><div class="wsl">Active Users</div></div><div class="wc-stat"><div class="wsv">'+pubCt+'</div><div class="wsl">Published Posts</div></div><div class="wc-stat"><div class="wsv">'+notices.length+'</div><div class="wsl">Active Notices</div></div></div></div>';
+    var html='<div class="wc">';
+    html+='<div class="wc-txt">';
+    html+='<h2>Welcome back, '+sess.name+'! <span style="font-size:20px">&#128075;</span></h2>';
+    html+='<p>'+tod+' &mdash; Here is what is happening in your admin zone today.</p>';
+    html+='<div class="wc-actions">';
+    html+='<button class="wc-btn wc-btn-solid" data-wc-go="users"><i class="fas fa-users"></i> Manage Users</button>';
+    html+='<button class="wc-btn wc-btn-w" data-wc-go="posts"><i class="fas fa-plus"></i> New Post</button>';
+    html+='<button class="wc-btn wc-btn-w" data-wc-go="audit"><i class="fas fa-history"></i> View Audit Log</button>';
+    html+='</div></div>';
+    html+='<div class="wc-stats">';
+    html+='<div class="wc-stat"><div class="wsv">'+actCt+'</div><div class="wsl">Active Users</div></div>';
+    html+='<div class="wc-stat"><div class="wsv">'+pubCt+'</div><div class="wsl">Published Posts</div></div>';
+    html+='<div class="wc-stat"><div class="wsv">'+notices.length+'</div><div class="wsl">Active Notices</div></div>';
+    html+='</div></div>';
+    wc.innerHTML=html;
+    // Attach click handlers
+    wc.querySelectorAll('[data-wc-go]').forEach(function(btn){
+      btn.addEventListener('click',function(){ goPageByName(this.getAttribute('data-wc-go')); });
+    });
   }
   // Stats
   var du=document.getElementById('dUsers'); if(du) du.textContent=users.length;
