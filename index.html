@@ -994,24 +994,25 @@ function renderUsers(){
   var tbl=document.getElementById('uTbl');
   if(!tbl) return;
   var isAdmin=window._isAdmin;
-  var isMod=window._isMod;
   tbl.innerHTML=slice.map(function(u){
     var sel=_uSel.indexOf(u.id)>-1;
-    var actions='<div class="tbl-act">';
-    actions+='<button class="btn btn-gn btn-sm" onclick="editUser(''+u.id+'')" title="Edit"><i class="fas fa-edit"></i></button>';
-    if(isAdmin) actions+='<button class="btn btn-rd btn-sm" onclick="delUser(''+u.id+'')" title="Delete"><i class="fas fa-trash"></i></button>';
-    actions+='</div>';
-    return '<tr><td><input type="checkbox" class="chk-row" '+(sel?'checked':'')+'onclick="toggleUserSel(''+u.id+'',this)"></td><td><div style="display:flex;align-items:center;gap:10px"><div class="tbl-av">'+u.avatar+'</div><div><div style="font-weight:600">'+u.name+'</div><div style="font-size:11px;color:var(--tx3)">@'+u.username+'</div></div></div></td><td>'+u.email+'</td><td>'+roleBadge(u.role)+'</td><td>'+statBadge(u.status)+'</td><td>'+fmtDate(u.joined)+'</td><td>'+actions+'</td></tr>';
+    var editBtn='<button class="btn btn-gn btn-sm" data-edit-user="'+u.id+'" title="Edit"><i class="fas fa-edit"></i></button>';
+    var delBtn=isAdmin?'<button class="btn btn-rd btn-sm" data-del-user="'+u.id+'" title="Delete"><i class="fas fa-trash"></i></button>':'';
+    var chk='<input type="checkbox" class="chk-row" '+(sel?'checked':'')+' data-sel-user="'+u.id+'">';
+    return '<tr><td>'+chk+'</td><td><div style="display:flex;align-items:center;gap:10px"><div class="tbl-av">'+u.avatar+'</div><div><div style="font-weight:600">'+u.name+'</div><div style="font-size:11px;color:var(--tx3)">@'+u.username+'</div></div></div></td><td>'+u.email+'</td><td>'+roleBadge(u.role)+'</td><td>'+statBadge(u.status)+'</td><td>'+fmtDate(u.joined)+'</td><td><div class="tbl-act">'+editBtn+delBtn+'</div></td></tr>';
   }).join('');
   if(!slice.length) tbl.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--tx3)">No users found.</td></tr>';
+  // Attach events via data attributes
+  tbl.querySelectorAll('[data-edit-user]').forEach(function(btn){ btn.addEventListener('click',function(){ editUser(this.getAttribute('data-edit-user')); }); });
+  tbl.querySelectorAll('[data-del-user]').forEach(function(btn){ btn.addEventListener('click',function(){ delUser(this.getAttribute('data-del-user')); }); });
+  tbl.querySelectorAll('[data-sel-user]').forEach(function(inp){ inp.addEventListener('change',function(){ toggleUserSel(this.getAttribute('data-sel-user'),this); }); });
   // Pagination
   var pgn=document.getElementById('uPgn');
-  var pi=document.getElementById('uPI');
-  if(pi) pi.textContent='Showing '+(total?(_uPage-1)*_uPerPage+1:0)+'-'+Math.min(_uPage*_uPerPage,total)+' of '+total;
   if(pgn){
-    var btns='<span class="pgn-info" id="uPI">Showing '+(total?(_uPage-1)*_uPerPage+1:0)+'-'+Math.min(_uPage*_uPerPage,total)+' of '+total+'</span>';
-    for(var i=1;i<=pages;i++){ btns+='<button class="pgn-btn'+(i===_uPage?' on':'')+'" onclick="_uPage='+i+';renderUsers()">'+i+'</button>'; }
+    var btns='<span class="pgn-info">Showing '+(total?(_uPage-1)*_uPerPage+1:0)+'-'+Math.min(_uPage*_uPerPage,total)+' of '+total+'</span>';
+    for(var i=1;i<=pages;i++){ btns+='<button class="pgn-btn'+(i===_uPage?' on':'')+'" data-pg-u="'+i+'">'+i+'</button>'; }
     pgn.innerHTML=btns;
+    pgn.querySelectorAll('[data-pg-u]').forEach(function(btn){ btn.addEventListener('click',function(){ _uPage=parseInt(this.getAttribute('data-pg-u')); renderUsers(); }); });
   }
   updateBulkBarUsers();
 }
@@ -1024,10 +1025,7 @@ function toggleAllUsers(el){
   var q=(document.getElementById('uSrch')||{}).value||'';
   var rf=(document.getElementById('uRF')||{}).value||'';
   var sf=(document.getElementById('uSF')||{}).value||'';
-  var users=DB.get('az_users').filter(function(u){
-    var mq=!q||(u.name.toLowerCase().indexOf(q.toLowerCase())>-1)||(u.email.toLowerCase().indexOf(q.toLowerCase())>-1);
-    return mq&&(!rf||u.role===rf)&&(!sf||u.status===sf);
-  });
+  var users=DB.get('az_users').filter(function(u){ return (!q||(u.name.toLowerCase().indexOf(q.toLowerCase())>-1)||(u.email.toLowerCase().indexOf(q.toLowerCase())>-1))&&(!rf||u.role===rf)&&(!sf||u.status===sf); });
   var page=users.slice((_uPage-1)*_uPerPage, _uPage*_uPerPage);
   if(el.checked){ page.forEach(function(u){ if(_uSel.indexOf(u.id)<0) _uSel.push(u.id); }); }
   else { page.forEach(function(u){ var i=_uSel.indexOf(u.id); if(i>-1) _uSel.splice(i,1); }); }
@@ -1035,30 +1033,23 @@ function toggleAllUsers(el){
 }
 function clearUserSel(){ _uSel=[]; var ca=document.getElementById('uChkAll'); if(ca) ca.checked=false; renderUsers(); }
 function updateBulkBarUsers(){
-  var bar=document.getElementById('uBulk');
-  var ct=document.getElementById('uBulkCt');
-  if(bar){ bar.classList.toggle('on',_uSel.length>0); }
+  var bar=document.getElementById('uBulk'); var ct=document.getElementById('uBulkCt');
+  if(bar) bar.classList.toggle('on',_uSel.length>0);
   if(ct) ct.textContent=_uSel.length+' selected';
 }
 function bulkDelUsers(){
   if(!_uSel.length) return;
   confirm2('Delete '+_uSel.length+' selected users? This cannot be undone.',function(){
-    var users=DB.get('az_users').filter(function(u){ return _uSel.indexOf(u.id)<0; });
-    DB.set('az_users',users);
+    DB.set('az_users',DB.get('az_users').filter(function(u){ return _uSel.indexOf(u.id)<0; }));
     logAct('Bulk deleted '+_uSel.length+' users','fa-trash','var(--rd)');
-    _uSel=[];
-    toast('Deleted '+users.length+' users deleted.','ok');
-    updateCounts(); renderUsers();
+    _uSel=[]; toast('Users deleted.','ok'); updateCounts(); renderUsers();
   });
 }
 function bulkStatusUsers(status){
   if(!_uSel.length) return;
-  var users=DB.get('az_users').map(function(u){ if(_uSel.indexOf(u.id)>-1) u.status=status; return u; });
-  DB.set('az_users',users);
+  DB.set('az_users',DB.get('az_users').map(function(u){ if(_uSel.indexOf(u.id)>-1) u.status=status; return u; }));
   logAct('Bulk set '+_uSel.length+' users to '+status,'fa-users','var(--yw)');
-  toast(_uSel.length+' users set to '+status,'ok');
-  _uSel=[];
-  renderUsers();
+  toast(_uSel.length+' users set to '+status,'ok'); _uSel=[]; renderUsers();
 }
 function openUserMod(){
   if(!window._isAdmin){ toast('Only Admins can add users.','err'); return; }
@@ -1108,8 +1099,7 @@ function saveUser(){
   } else {
     if(!window._isAdmin){ toast('Only Admins can add users.','err'); return; }
     if(users.find(function(u){ return u.email===email; })){ toast('Email already exists.','err'); return; }
-    var newU={id:uid('u'),name:name,username:document.getElementById('uUname').value.trim()||email.split('@')[0],email:email,password:pwd||'pass123',phone:document.getElementById('uPhone').value.trim(),role:document.getElementById('uRole').value,status:document.getElementById('uStat').value,joined:new Date().toISOString().split('T')[0],bio:'',avatar:ini(name)};
-    users.push(newU);
+    users.push({id:uid('u'),name:name,username:document.getElementById('uUname').value.trim()||email.split('@')[0],email:email,password:pwd||'pass123',phone:document.getElementById('uPhone').value.trim(),role:document.getElementById('uRole').value,status:document.getElementById('uStat').value,joined:new Date().toISOString().split('T')[0],bio:'',avatar:ini(name)});
     logAct('New user '+name+' was created','fa-user-plus','var(--gn)');
     toast('User created!','ok');
   }
@@ -1120,7 +1110,7 @@ function delUser(id){
   var u=DB.get('az_users').find(function(x){ return x.id===id; });
   if(!u) return;
   if(!window._isAdmin){ toast('Only Admins can delete users.','err'); return; }
-  confirm2('Delete user "'+u.name+'"? This cannot be undone.',function(){
+  confirm2('Delete user '+u.name+'? This cannot be undone.',function(){
     DB.set('az_users',DB.get('az_users').filter(function(x){ return x.id!==id; }));
     logAct('User '+u.name+' was deleted','fa-trash','var(--rd)');
     toast('User deleted.','ok'); updateCounts(); renderUsers();
@@ -1137,13 +1127,13 @@ function renderNotices(){
   else {
     var pmap={'High':'b-hi','Medium':'b-med','Low':'b-lo'};
     list.innerHTML=notices.map(function(n){
-      return '<div class="nc"><div class="nc-hd"><span class="nc-ti">'+n.title+'</span><span class="badge '+pmap[n.priority]+'">'+n.priority+'</span></div><div class="nc-bd">'+n.content+'</div><div class="nc-ft"><span>'+fmtDate(n.date)+' &bull; '+n.author+'</span><button class="btn btn-rd btn-sm" onclick="delNotice(''+n.id+'')"><i class="fas fa-trash"></i></button></div></div>';
+      return '<div class="nc"><div class="nc-hd"><span class="nc-ti">'+n.title+'</span><span class="badge '+pmap[n.priority]+'">'+n.priority+'</span></div><div class="nc-bd">'+n.content+'</div><div class="nc-ft"><span>'+fmtDate(n.date)+' - '+n.author+'</span><button class="btn btn-rd btn-sm" data-del-notice="'+n.id+'"><i class="fas fa-trash"></i></button></div></div>';
     }).join('');
+    list.querySelectorAll('[data-del-notice]').forEach(function(btn){ btn.addEventListener('click',function(){ delNotice(this.getAttribute('data-del-notice')); }); });
   }
-  // Ticker
   var tk=document.getElementById('tkTxt');
   if(tk){
-    if(notices.length) tk.textContent=notices.map(function(n){ return n.title; }).join(' • ');
+    if(notices.length) tk.textContent=notices.map(function(n){ return n.title; }).join(' - ');
     else tk.textContent='No active notices.';
   }
 }
@@ -1157,45 +1147,38 @@ function addNotice(){
   notices.unshift({id:uid('n'),title:title,content:msg,priority:pri,date:new Date().toISOString().split('T')[0],author:sess.name||'Admin'});
   DB.set('az_notices',notices);
   document.getElementById('nTitle').value=''; document.getElementById('nMsg').value='';
-  logAct('Notice "'+title+'" added','fa-bullhorn','var(--yw)');
+  logAct('Notice '+title+' added','fa-bullhorn','var(--yw)');
   toast('Notice posted!','ok'); updateCounts(); renderNotices();
 }
 function delNotice(id){
   var n=DB.get('az_notices').find(function(x){ return x.id===id; });
   if(!n) return;
-  confirm2('Delete notice "'+n.title+'"?',function(){
+  confirm2('Delete notice '+n.title+'?',function(){
     DB.set('az_notices',DB.get('az_notices').filter(function(x){ return x.id!==id; }));
-    logAct('Notice "'+n.title+'" deleted','fa-trash','var(--rd)');
+    logAct('Notice '+n.title+' deleted','fa-trash','var(--rd)');
     toast('Notice deleted.','ok'); updateCounts(); renderNotices();
   });
 }
-// MARKDOWN PARSER (lightweight)
 function parseMd(text){
   if(!text) return '';
   var t=text;
-  // Code blocks first
-  t=t.replace(/```([\s\S]*?)```/g,'<pre><code>$1</code></pre>');
+  t=t.replace(/```([sS]*?)```/g,'<pre><code>$1</code></pre>');
   t=t.replace(/`([^`]+)`/g,'<code>$1</code>');
-  // Headers
   t=t.replace(/^### (.+)$/gm,'<h3>$1</h3>');
   t=t.replace(/^## (.+)$/gm,'<h2>$1</h2>');
   t=t.replace(/^# (.+)$/gm,'<h1>$1</h1>');
-  // Bold/italic
   t=t.replace(/**(.+?)**/g,'<strong>$1</strong>');
   t=t.replace(/*(.+?)*/g,'<em>$1</em>');
-  // Blockquote
   t=t.replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>');
-  // Lists
   t=t.replace(/^- (.+)$/gm,'<li>$1</li>');
-  t=t.replace(/^\d+\. (.+)$/gm,'<li>$1</li>');
-  t=t.replace(/(<li>.*<\/li>)/s,'<ul>$1</ul>');
-  // Links
-  t=t.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank">$1</a>');
-  // Line breaks to paragraphs
-  t=t.split('\n\n').map(function(para){
+  t=t.replace(/[([^]]+)](([^)]+))/g,'<a href="$2" target="_blank">$1</a>');
+  t=t.split('
+
+').map(function(para){
     if(para.match(/^<(h[123]|ul|ol|li|pre|blockquote)/)) return para;
     if(!para.trim()) return '';
-    return '<p>'+para.replace(/\n/g,'<br>')+'</p>';
+    return '<p>'+para.replace(/
+/g,'<br>')+'</p>';
   }).join('');
   return t;
 }
@@ -1213,7 +1196,6 @@ function mdInsert(before, after){
   ta.focus(); ta.selectionStart=start+before.length; ta.selectionEnd=start+before.length+sel.length;
   updatePreview();
 }
-// Posts
 var _pPage=1, _pPerPage=6, _pSel=[];
 function renderPosts(){
   var q=(document.getElementById('pSrch')||{}).value||'';
@@ -1236,21 +1218,24 @@ function renderPosts(){
   var smap={'Published':'b-pub','Draft':'b-dft','Archived':'b-arc'};
   tbl.innerHTML=slice.map(function(p){
     var sel=_pSel.indexOf(p.id)>-1;
-    var actions='<div class="tbl-act">';
-    actions+='<button class="btn btn-pr btn-sm" onclick="viewPost(''+p.id+'')" title="View"><i class="fas fa-eye"></i></button>';
-    if(isMod) actions+='<button class="btn btn-gn btn-sm" onclick="editPost(''+p.id+'')" title="Edit"><i class="fas fa-edit"></i></button>';
-    if(isAdmin) actions+='<button class="btn btn-rd btn-sm" onclick="delPost(''+p.id+'')" title="Delete"><i class="fas fa-trash"></i></button>';
-    actions+='</div>';
+    var viewBtn='<button class="btn btn-pr btn-sm" data-view-post="'+p.id+'" title="View"><i class="fas fa-eye"></i></button>';
+    var editBtn=isMod?'<button class="btn btn-gn btn-sm" data-edit-post="'+p.id+'" title="Edit"><i class="fas fa-edit"></i></button>':'';
+    var delBtn=isAdmin?'<button class="btn btn-rd btn-sm" data-del-post="'+p.id+'" title="Delete"><i class="fas fa-trash"></i></button>':'';
+    var chk='<input type="checkbox" class="chk-row" '+(sel?'checked':'')+' data-sel-post="'+p.id+'">';
     var title=p.title.length>40?p.title.substring(0,40)+'...':p.title;
-    return '<tr><td><input type="checkbox" class="chk-row" '+(sel?'checked':'')+'onclick="togglePostSel(''+p.id+'',this)"></td><td style="font-weight:500">'+title+'</td><td><span class="badge b-mo">'+p.category+'</span></td><td>'+p.author+'</td><td><span class="badge '+smap[p.status]+'">'+p.status+'</span></td><td>'+fmtDate(p.date)+'</td><td>'+actions+'</td></tr>';
+    return '<tr><td>'+chk+'</td><td style="font-weight:500">'+title+'</td><td><span class="badge b-mo">'+p.category+'</span></td><td>'+p.author+'</td><td><span class="badge '+smap[p.status]+'">'+p.status+'</span></td><td>'+fmtDate(p.date)+'</td><td><div class="tbl-act">'+viewBtn+editBtn+delBtn+'</div></td></tr>';
   }).join('');
   if(!slice.length) tbl.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--tx3)">No posts found.</td></tr>';
+  tbl.querySelectorAll('[data-view-post]').forEach(function(btn){ btn.addEventListener('click',function(){ viewPost(this.getAttribute('data-view-post')); }); });
+  tbl.querySelectorAll('[data-edit-post]').forEach(function(btn){ btn.addEventListener('click',function(){ editPost(this.getAttribute('data-edit-post')); }); });
+  tbl.querySelectorAll('[data-del-post]').forEach(function(btn){ btn.addEventListener('click',function(){ delPost(this.getAttribute('data-del-post')); }); });
+  tbl.querySelectorAll('[data-sel-post]').forEach(function(inp){ inp.addEventListener('change',function(){ togglePostSel(this.getAttribute('data-sel-post'),this); }); });
   var pgn=document.getElementById('pPgn');
   if(pgn){
     var btns='<span class="pgn-info">Showing '+(total?(_pPage-1)*_pPerPage+1:0)+'-'+Math.min(_pPage*_pPerPage,total)+' of '+total+'</span>';
-    var pages2=Math.max(1,Math.ceil(total/_pPerPage));
-    for(var i=1;i<=pages2;i++){ btns+='<button class="pgn-btn'+(i===_pPage?' on':'')+'" onclick="_pPage='+i+';renderPosts()">'+i+'</button>'; }
+    for(var i=1;i<=pages;i++){ btns+='<button class="pgn-btn'+(i===_pPage?' on':'')+'" data-pg-p="'+i+'">'+i+'</button>'; }
     pgn.innerHTML=btns;
+    pgn.querySelectorAll('[data-pg-p]').forEach(function(btn){ btn.addEventListener('click',function(){ _pPage=parseInt(this.getAttribute('data-pg-p')); renderPosts(); }); });
   }
   updateBulkBarPosts();
 }
@@ -1279,16 +1264,14 @@ function bulkDelPosts(){
   if(!_pSel.length) return;
   if(!window._isAdmin){ toast('Only Admins can bulk delete posts.','err'); return; }
   confirm2('Delete '+_pSel.length+' selected posts?',function(){
-    var posts=DB.get('az_posts').filter(function(p){ return _pSel.indexOf(p.id)<0; });
-    DB.set('az_posts',posts);
+    DB.set('az_posts',DB.get('az_posts').filter(function(p){ return _pSel.indexOf(p.id)<0; }));
     logAct('Bulk deleted '+_pSel.length+' posts','fa-trash','var(--rd)');
     _pSel=[]; toast('Posts deleted.','ok'); updateCounts(); renderPosts();
   });
 }
 function bulkStatusPosts(status){
   if(!_pSel.length) return;
-  var posts=DB.get('az_posts').map(function(p){ if(_pSel.indexOf(p.id)>-1) p.status=status; return p; });
-  DB.set('az_posts',posts);
+  DB.set('az_posts',DB.get('az_posts').map(function(p){ if(_pSel.indexOf(p.id)>-1) p.status=status; return p; }));
   logAct('Bulk set '+_pSel.length+' posts to '+status,'fa-newspaper','var(--pr)');
   toast(_pSel.length+' posts set to '+status,'ok'); _pSel=[]; renderPosts();
 }
@@ -1338,11 +1321,11 @@ function savePost(){
       if(p.id===id){ p.title=title; p.content=content; p.category=document.getElementById('pCat').value; p.status=document.getElementById('pStat').value; p.tags=document.getElementById('pTags').value; }
       return p;
     });
-    logAct('Post "'+title+'" was edited','fa-edit','var(--pr)');
+    logAct('Post '+title+' was edited','fa-edit','var(--pr)');
     toast('Post updated!','ok');
   } else {
     posts.unshift({id:uid('p'),title:title,content:content,category:document.getElementById('pCat').value,status:document.getElementById('pStat').value,author:sess.name||'Admin',date:new Date().toISOString().split('T')[0],tags:document.getElementById('pTags').value});
-    logAct('New post "'+title+'" was created','fa-newspaper','var(--gn)');
+    logAct('New post '+title+' was created','fa-newspaper','var(--gn)');
     toast('Post created!','ok');
   }
   DB.set('az_posts',posts);
@@ -1352,9 +1335,9 @@ function delPost(id){
   var p=DB.get('az_posts').find(function(x){ return x.id===id; });
   if(!p) return;
   if(!window._isAdmin){ toast('Only Admins can delete posts.','err'); return; }
-  confirm2('Delete post "'+p.title+'"?',function(){
+  confirm2('Delete post '+p.title+'?',function(){
     DB.set('az_posts',DB.get('az_posts').filter(function(x){ return x.id!==id; }));
-    logAct('Post "'+p.title+'" deleted','fa-trash','var(--rd)');
+    logAct('Post '+p.title+' deleted','fa-trash','var(--rd)');
     toast('Post deleted.','ok'); updateCounts(); renderPosts();
   });
 }
